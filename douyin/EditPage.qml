@@ -13,6 +13,9 @@ Rectangle {
     property var selectedMusic: null
     property bool musicSelectorVisible: false
 
+    // 屏幕宽度，用于自适应
+    property int screenWidth: parent ? parent.width : 375
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -27,20 +30,20 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "视频预览区域"
                 color: "white"
-                font.pixelSize: 20
+                font.pixelSize: screenWidth * 0.05
             }
         }
 
-        // 底部控制区域 - 使用z轴提高层级
+        // 底部控制区域
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 150
+            Layout.preferredHeight: screenWidth * 0.25  // 25%宽度
             color: "#000000"
-            z: 10  // 提高层级，确保在弹窗之上
+            z: 10
 
             RowLayout {
                 anchors.fill: parent
-                spacing: 0
+                spacing: screenWidth * 0.05
 
                 // 左边填充
                 Item {
@@ -49,46 +52,45 @@ Rectangle {
 
                 // 选择音乐按钮
                 Button {
-                    Layout.preferredWidth: 200
-                    Layout.preferredHeight: 80
+                    Layout.preferredWidth: screenWidth * 0.4
+                    Layout.preferredHeight: screenWidth * 0.12
                     background: Rectangle {
                         color: "#666666"
-                        radius: 40
+                        radius: height / 2
                     }
                     contentItem: Text {
                         text: selectedMusic ? "已选音乐" : "选择音乐"
                         color: "white"
-                        font.pixelSize: 20
+                        font.pixelSize: screenWidth * 0.035
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        anchors.centerIn: parent
                     }
                     onClicked: musicSelectorVisible = true
                 }
 
-                // 右边填充
+                // 中间填充
                 Item {
                     Layout.fillWidth: true
                 }
 
-                // 下一步按钮 - 修改：总可用
+                // 下一步按钮
                 Button {
-                    Layout.preferredWidth: 200
-                    Layout.preferredHeight: 80
+                    Layout.preferredWidth: screenWidth * 0.4
+                    Layout.preferredHeight: screenWidth * 0.12
                     background: Rectangle {
-                        color: "#FF2C5C"  // 总是红色
-                        radius: 40
+                        color: "#FF2C5C"
+                        radius: height / 2
                     }
                     contentItem: Text {
                         text: "下一步"
                         color: "white"
-                        font.pixelSize: 20
+                        font.pixelSize: screenWidth * 0.035
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        anchors.centerIn: parent
                     }
-                    onClicked: {
-                        // 不需要检查selectedMusic
-                        root.editComplete(selectedMusic)
-                    }
+                    onClicked: root.editComplete(selectedMusic)
                 }
 
                 // 右边填充
@@ -108,16 +110,14 @@ Rectangle {
         height: parent.height * 0.7
         color: "#1A1A1A"
         visible: musicSelectorVisible
-        z: 5  // 比控制区域低，但比背景高
+        z: 5
 
-        // 弹出动画
         y: musicSelectorVisible ? 0 : height
 
         Behavior on y {
             NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
         }
 
-        // 点击弹窗外部关闭
         MouseArea {
             anchors.fill: parent
             onClicked: musicSelectorVisible = false
@@ -125,27 +125,26 @@ Rectangle {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 20
-            spacing: 15
+            anchors.margins: screenWidth * 0.05
+            spacing: screenWidth * 0.03
 
-            // 标题行 - 带关闭按钮
+            // 标题行
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 40
+                Layout.preferredHeight: screenWidth * 0.1
 
                 Text {
                     text: "选择音乐"
                     color: "white"
-                    font.pixelSize: 24
+                    font.pixelSize: screenWidth * 0.045
                     font.bold: true
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillWidth: true
                 }
 
-                // 关闭弹窗按钮
                 Button {
-                    Layout.preferredWidth: 40
-                    Layout.preferredHeight: 40
+                    Layout.preferredWidth: screenWidth * 0.1
+                    Layout.preferredHeight: screenWidth * 0.1
                     text: "×"
                     background: Rectangle {
                         color: "transparent"
@@ -153,7 +152,7 @@ Rectangle {
                     contentItem: Text {
                         text: parent.text
                         color: "white"
-                        font.pixelSize: 24
+                        font.pixelSize: screenWidth * 0.045
                         font.bold: true
                     }
                     onClicked: musicSelectorVisible = false
@@ -169,15 +168,13 @@ Rectangle {
                     id: musicListView
                     model: musicModel
                     delegate: musicItemDelegate
-                    spacing: 10
+                    spacing: screenWidth * 0.02
                 }
             }
-
-            // 确认按钮已删除
         }
     }
 
-    // 音乐数据模型
+    // 音乐数据模型（保持不变）
     ListModel {
         id: musicModel
 
@@ -219,42 +216,40 @@ Rectangle {
 
         Button {
             width: musicListView.width
-            height: 80
+            height: screenWidth * 0.2
             background: Rectangle {
                 color: selected ? "#222222" : "#111111"
-                radius: 10
+                radius: screenWidth * 0.02
                 border.color: selected ? "#FF2C5C" : "transparent"
-                border.width: selected ? 2 : 0
+                border.width: 2
             }
             contentItem: RowLayout {
                 anchors.fill: parent
-                anchors.margins: 15
+                anchors.margins: screenWidth * 0.03
 
-                // 音乐图标
                 Rectangle {
-                    Layout.preferredWidth: 50
-                    Layout.preferredHeight: 50
-                    radius: 8
+                    Layout.preferredWidth: screenWidth * 0.12
+                    Layout.preferredHeight: screenWidth * 0.12
+                    radius: screenWidth * 0.015
                     color: "#333333"
 
                     Text {
                         anchors.centerIn: parent
                         text: "♪"
                         color: "white"
-                        font.pixelSize: 24
+                        font.pixelSize: screenWidth * 0.05
                     }
                 }
 
-                // 音乐信息
                 Column {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    spacing: 8
+                    spacing: screenWidth * 0.01
 
                     Text {
                         text: name
                         color: "white"
-                        font.pixelSize: 16
+                        font.pixelSize: screenWidth * 0.035
                         font.bold: true
                         elide: Text.ElideRight
                     }
@@ -262,49 +257,41 @@ Rectangle {
                     Text {
                         text: author + " · " + duration
                         color: "#AAAAAA"
-                        font.pixelSize: 14
+                        font.pixelSize: screenWidth * 0.03
                     }
                 }
 
-                // 选择状态指示器
                 Rectangle {
-                    Layout.preferredWidth: 30
-                    Layout.preferredHeight: 30
-                    radius: 15
+                    Layout.preferredWidth: screenWidth * 0.07
+                    Layout.preferredHeight: screenWidth * 0.07
+                    radius: width / 2
                     color: selected ? "#FF2C5C" : "#555555"
 
                     Text {
                         anchors.centerIn: parent
                         text: selected ? "✓" : ""
                         color: "white"
-                        font.pixelSize: 16
+                        font.pixelSize: screenWidth * 0.035
                         font.bold: true
                     }
                 }
             }
 
             onClicked: {
-                // 点击已选中的项则取消选择
                 if (selected) {
-                    // 清除当前项的选中状态
                     musicModel.setProperty(index, "selected", false)
-                    // 清除选中的音乐数据
                     selectedMusic = null
                 } else {
-                    // 清除所有项的选中状态
                     for (var i = 0; i < musicModel.count; i++) {
                         musicModel.setProperty(i, "selected", false)
                     }
-                    // 设置当前项为选中
                     musicModel.setProperty(index, "selected", true)
-                    // 保存选中的音乐数据
                     selectedMusic = {
                         name: name,
                         author: author,
                         duration: duration
                     }
                 }
-                // 点击后不关闭弹窗
             }
         }
     }
@@ -313,7 +300,7 @@ Rectangle {
     Button {
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.margins: 20
+        anchors.margins: screenWidth * 0.05
         text: "← 返回"
         background: Rectangle {
             color: "transparent"
@@ -321,7 +308,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             color: "white"
-            font.pixelSize: 16
+            font.pixelSize: screenWidth * 0.04
         }
         onClicked: root.backRequested()
     }

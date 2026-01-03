@@ -9,6 +9,10 @@ Rectangle {
 
     signal videoSelected(string filePath)
 
+    // 屏幕宽度，用于自适应
+    property int screenWidth: parent ? parent.width : 375
+    property int screenHeight: parent ? parent.height : 667
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -23,63 +27,64 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "录制视频预览区域"
                 color: "white"
-                font.pixelSize: 20
+                font.pixelSize: screenWidth * 0.05  // 自适应字体大小
             }
         }
 
         // 第二行：控制按钮区域
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: 150
+            Layout.preferredHeight: screenHeight * 0.15  // 15%高度
             color: "#000000"
 
             // 三个矩形并列
             Row {
                 anchors.centerIn: parent
-                spacing: 80
+                spacing: screenWidth * 0.1  // 10%宽度作为间距
 
                 // 左边：上传按钮
                 Button {
-                    width: 80
-                    height: 80
+                    width: screenWidth * 0.15  // 15%宽度
+                    height: screenWidth * 0.15  // 保持正方形
                     anchors.verticalCenter: parent.verticalCenter
                     background: Rectangle {
                         color: "#666666"
-                        radius: 40
+                        radius: width / 2  // 圆形
                     }
                     contentItem: Text {
                         text: "上传"
                         color: "white"
-                        font.pixelSize: 20
+                        font.pixelSize: screenWidth * 0.04  // 自适应字体
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
+                        anchors.centerIn: parent
                     }
                     onClicked: fileDialog.open()
                 }
 
                 // 中间：拍摄按钮
                 Rectangle {
-                    width: 100
-                    height: 100
+                    width: screenWidth * 0.18  // 18%宽度
+                    height: screenWidth * 0.18  // 保持正方形
                     anchors.verticalCenter: parent.verticalCenter
-                    radius: 50
+                    radius: width / 2  // 圆形
                     color: "transparent"
                     border.color: "#FF2C5C"
-                    border.width: 4
+                    border.width: 3
 
                     Rectangle {
                         anchors.centerIn: parent
-                        width: 70
-                        height: 70
-                        radius: 35
+                        width: parent.width * 0.7  // 70%大小
+                        height: parent.width * 0.7
+                        radius: width / 2  // 圆形
                         color: "#FF2C5C"
                     }
                 }
 
                 // 右边：空白矩形
                 Rectangle {
-                    width: 80
-                    height: 80
+                    width: screenWidth * 0.15  // 15%宽度
+                    height: screenWidth * 0.15
                     anchors.verticalCenter: parent.verticalCenter
                     color: "#000000"
                 }
