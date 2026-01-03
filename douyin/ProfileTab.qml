@@ -42,9 +42,9 @@ Rectangle {
             }
             // 头像
             Rectangle {
-                Layout.preferredWidth: 150
-                Layout.preferredHeight: 150
-                radius: 75
+                Layout.preferredWidth: 120
+                Layout.preferredHeight: 120
+                radius: 60
                 color: "#FF0050"
                 border.color: "#FFFFFF"
                 border.width: 2
