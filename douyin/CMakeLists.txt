@@ -28,6 +28,10 @@ qt_add_qml_module(appdouyin
     QML_FILES ProfileLikes.qml
     QML_FILES ProfileWroks.qml
     QML_FILES HomeFollowPage.qml
+    QML_FILES
+    QML_FILES CaptureUploadPage.qml
+    QML_FILES EditPage.qml
+    QML_FILES PublishPage.qml
 )
 
 source_group("QML Files" FILES
