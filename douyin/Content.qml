@@ -4,7 +4,7 @@ import QtQuick.Layouts
 Item {
     id: contentRoot
 
-    // 当前底部Tab：0=首页，1=朋友，2=创建作品，3=消息，4=个人空间
+    // 当前底部Tab：0=首页，1=朋友，2=创建作品，3=个人空间
     property int currentTab: 0
 
     // 主列排列 - 整个页面垂直布局
@@ -30,9 +30,6 @@ Item {
                     return _postVideoTab
                 }
                 if (currentTab === 3) {
-                    return _messageTab
-                }
-                if (currentTab === 4) {
                     return _profileTab
                 }
             }

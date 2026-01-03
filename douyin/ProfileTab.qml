@@ -163,25 +163,25 @@ Rectangle {
                 }
             }
 
-            // 加好友按钮
-            Rectangle {
-                Layout.preferredWidth: 0  // 让两个按钮等宽
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                color: "#FF0050"
-                radius: 5
+            // // 加好友按钮
+            // Rectangle {
+            //     Layout.preferredWidth: 0  // 让两个按钮等宽
+            //     Layout.fillWidth: true
+            //     Layout.preferredHeight: 40
+            //     color: "#FF0050"
+            //     radius: 5
 
-                Text {
-                    text: "加好友"
-                    color: "#FFFFFF"
-                    font.pixelSize: 16
-                    anchors.centerIn: parent
-                }
+            //     Text {
+            //         text: "加好友"
+            //         color: "#FFFFFF"
+            //         font.pixelSize: 16
+            //         anchors.centerIn: parent
+            //     }
 
-                TapHandler {
-                    onTapped: console.log("加好友")
-                }
-            }
+            //     TapHandler {
+            //         onTapped: console.log("加好友")
+            //     }
+            // }
         }
 
         // 第三行：作品、推荐、喜欢按钮行 - 固定高度
@@ -226,37 +226,37 @@ Rectangle {
                 }
             }
 
-            // 收藏按钮
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 40
-                color: "transparent"
+            // // 收藏按钮
+            // Rectangle {
+            //     Layout.fillWidth: true
+            //     Layout.preferredHeight: 40
+            //     color: "transparent"
 
-                Text {
-                    text: "收藏"
-                    color: tabRow.selectedIndex === 1 ? "#FFFFFF" : "#AAAAAA"
-                    font.pixelSize: 16
-                    font.bold: tabRow.selectedIndex === 1
-                    anchors.centerIn: parent
-                }
+            //     Text {
+            //         text: "收藏"
+            //         color: tabRow.selectedIndex === 1 ? "#FFFFFF" : "#AAAAAA"
+            //         font.pixelSize: 16
+            //         font.bold: tabRow.selectedIndex === 1
+            //         anchors.centerIn: parent
+            //     }
 
-                // 底部红线
-                Rectangle {
-                    width: parent.width
-                    height: 2
-                    color: "#FF0050"
-                    anchors.bottom: parent.bottom
-                    visible: tabRow.selectedIndex === 1
-                }
+            //     // 底部红线
+            //     Rectangle {
+            //         width: parent.width
+            //         height: 2
+            //         color: "#FF0050"
+            //         anchors.bottom: parent.bottom
+            //         visible: tabRow.selectedIndex === 1
+            //     }
 
-                TapHandler {
-                    onTapped: {
-                        console.log("切换到推荐")
-                        tabRow.selectedIndex = 1
-                        currentProfileTab = 1
-                    }
-                }
-            }
+            //     TapHandler {
+            //         onTapped: {
+            //             console.log("切换到推荐")
+            //             tabRow.selectedIndex = 1
+            //             currentProfileTab = 1
+            //         }
+            //     }
+            // }
 
             // 喜欢按钮
             Rectangle {
@@ -323,15 +323,6 @@ Rectangle {
         Component {
             id: _profileLikes
             ProfileLikes {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-        }
-
-        // 收藏页面
-        Component {
-            id: _profileCollects
-            ProfileCollects {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

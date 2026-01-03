@@ -9,7 +9,7 @@ RowLayout {
     spacing: 0
 
     // 信号：当页面切换时发出
-    signal bottomButtonChanged(int pageIndex)  // 0=首页，1=朋友，2=创建作品，3=消息，4=个人空间
+    signal bottomButtonChanged(int pageIndex)  // 0=首页，1=朋友，2=创建作品，3=个人空间
 
     // 当前选中的按钮索引
     property int currentIndex: 0
@@ -92,7 +92,7 @@ RowLayout {
 
         Text {
             text: "+"
-            color: "#FFFFFF"
+            color: bottomBar.currentIndex === 2 ? "#FF0050" : "#FFFFFF"
             font.pixelSize: 30
             font.bold: true
             anchors.centerIn: parent
@@ -100,47 +100,48 @@ RowLayout {
 
         TapHandler {
             onTapped: {
-                // 发布按钮比较特殊，点击后通常弹出发布页面，不改变底部选中状态
-                bottomBar.bottomButtonChanged(2)
-                console.log("打开发布页面")
-            }
-        }
-    }
-
-    // 消息
-    Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 60
-        color: "transparent"
-
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: 4
-
-            Text {
-                text: "💬"
-                color: "#FF0050"
-                font.pixelSize: 24
-                Layout.alignment: Qt.AlignHCenter
-            }
-
-            Text {
-                text: "消息"
-                color: bottomBar.currentIndex === 3 ? "#FF0050" : "#FFFFFF"
-                font.pixelSize: 12
-                Layout.alignment: Qt.AlignHCenter
-            }
-        }
-
-        TapHandler {
-            onTapped: {
-                if (bottomBar.currentIndex !== 3) {
-                    bottomBar.currentIndex = 3
-                    bottomBar.bottomButtonChanged(3)
+                if (bottomBar.currentIndex !== 2) {
+                    bottomBar.currentIndex = 2
+                    bottomBar.bottomButtonChanged(2)
                 }
             }
         }
     }
+
+    // // 消息
+    // Rectangle {
+    //     Layout.fillWidth: true
+    //     Layout.preferredHeight: 60
+    //     color: "transparent"
+
+    //     ColumnLayout {
+    //         anchors.centerIn: parent
+    //         spacing: 4
+
+    //         Text {
+    //             text: "💬"
+    //             color: "#FF0050"
+    //             font.pixelSize: 24
+    //             Layout.alignment: Qt.AlignHCenter
+    //         }
+
+    //         Text {
+    //             text: "消息"
+    //             color: bottomBar.currentIndex === 3 ? "#FF0050" : "#FFFFFF"
+    //             font.pixelSize: 12
+    //             Layout.alignment: Qt.AlignHCenter
+    //         }
+    //     }
+
+    //     TapHandler {
+    //         onTapped: {
+    //             if (bottomBar.currentIndex !== 3) {
+    //                 bottomBar.currentIndex = 3
+    //                 bottomBar.bottomButtonChanged(3)
+    //             }
+    //         }
+    //     }
+    // }
 
     // 我
     Rectangle {
@@ -161,7 +162,7 @@ RowLayout {
 
             Text {
                 text: "我"
-                color: bottomBar.currentIndex === 4 ? "#FF0050" : "#FFFFFF"
+                color: bottomBar.currentIndex === 3 ? "#FF0050" : "#FFFFFF"
                 font.pixelSize: 12
                 Layout.alignment: Qt.AlignHCenter
             }
@@ -169,9 +170,9 @@ RowLayout {
 
         TapHandler {
             onTapped: {
-                if (bottomBar.currentIndex !== 4) {
-                    bottomBar.currentIndex = 4
-                    bottomBar.bottomButtonChanged(4)
+                if (bottomBar.currentIndex !== 3) {
+                    bottomBar.currentIndex = 3
+                    bottomBar.bottomButtonChanged(3)
                 }
             }
         }
