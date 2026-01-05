@@ -10,6 +10,26 @@ qt_standard_project_setup(REQUIRES 6.9) #set(CMAKE_AUTOUIC ON)  set(CMAKE_AUTOMO
 
 qt_add_executable(appdouyin)
 
+if(ANDROID)
+    # 1. 应用信息（必须）
+    set_target_properties(appdouyin PROPERTIES
+        QT_ANDROID_APP_NAME "乐拍视界"
+        QT_ANDROID_PACKAGE_NAME "com.baixiang.lepaishijie"
+        # QT_ANDROID_APP_ICON "@drawable/icon"
+    )
+
+    # 2. 指定清单文件（必须）
+    set_target_properties(appdouyin PROPERTIES
+        QT_ANDROID_APP_MANIFEST "${CMAKE_CURRENT_SOURCE_DIR}/android/AndroidManifest.xml"
+    )
+
+    # 3. SDK版本（必须）
+    set_target_properties(appdouyin PROPERTIES
+        QT_ANDROID_MIN_SDK_VERSION "21"
+        QT_ANDROID_TARGET_SDK_VERSION "33"
+    )
+endif()
+
 qt_add_qml_module(appdouyin
     URI douyin
     VERSION 1.0
@@ -32,6 +52,11 @@ qt_add_qml_module(appdouyin
     QML_FILES CaptureUploadPage.qml
     QML_FILES EditPage.qml
     QML_FILES PublishPage.qml
+    RESOURCES icons.qrc
+    RESOURCES android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
 )
 
 source_group("QML Files" FILES
