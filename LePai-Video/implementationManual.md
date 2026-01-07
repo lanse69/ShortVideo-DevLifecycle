@@ -42,28 +42,32 @@
 LePai-Video/
 ├── docs/
 ├── infrastructure/
-│   ├── docker-compose.yml
+│   ├── docker-compose.yml      # 定义数据库主从、Redis、MinIO及网络拓扑
 │   ├── nginx_cdn/              # CDN配置
 │   ├── nginx_gateway/          # 网关配置
 │   ├── config_templates/       # 存放配置文件模板
-│   │   ├── server_config.json
+│   │   ├── server_config.json  # 服务端配置模板，包含主从库与Redis地址
 │   │   └── client_config.json
-│   ├── scripts/                # 存放配置脚本                
+│   ├── scripts/                # 存放配置脚本
 │   │   ├── install_dependencies.sh
-│   │   ├── setup_docker.sh
-│   │   └── configure_env.sh  # 生成具体的配置
+│   │   ├── setup_docker.sh     # Docker环境部署脚本
+│   │   └── configure_env.sh    # 生成具体的配置
 │   └── sql/
-│       └── init.sql          # 数据库初始化脚本
+│       └── init.sql            # 数据库初始化脚本，包含复制用户创建与表结构
 ├── server/                     # 【后端组】
-│   ├── CMakeLists.txt          
-│   ├── config/                 
+│   ├── CMakeLists.txt          # 服务端构建配置
+│   ├── config/                 # 存放生成的服务端配置
 │   │   └── config.json
 │   ├── api_service/            # 核心业务服务
 │   │   ├── CMakeLists.txt
 │   │   └── src/
-│   │       ├── main.cpp
+│   │       ├── main.cpp            # 服务入口，初始化主从DB、Redis连接及定时同步任务
 │   │       ├── UserController.h    # 用户注册相关接口定义
-│   │       └── UserController.cpp  # 用户注册业务逻辑实现
+│   │       ├── UserController.cpp  # 用户注册业务逻辑实现，直接写入主库
+│   │       ├── LikeController.h    # 视频点赞接口定义
+│   │       ├── LikeController.cpp  # 视频点赞业务逻辑，利用Redis进行高并发缓冲
+│   │       ├── SyncScheduler.h     # 数据同步调度器定义
+│   │       └── SyncScheduler.cpp
 │   ├── video_worker/           # 转码服务
 │   │   ├── CMakeLists.txt
 │   │   └── src/
@@ -71,24 +75,24 @@ LePai-Video/
 │   └── common/                 # 公共库
 │       ├── CMakeLists.txt
 │       ├── src/
-│       │   ├── config_manager.cpp
-│       │   └── utils.cpp           # 包含 UUID 生成和 SHA256 哈希实现
+│       │   ├── config_manager.cpp  # 配置读取实现
+│       │   └── utils.cpp           # 通用工具实现
 │       └── include/
-│           ├── config_manager.h
-│           └── utils.h             # 工具类头文件
+│           ├── config_manager.h    # 配置管理器头文件
+│           └── utils.h             # 通用工具类头文件
 └── client/                     # 【客户端组】
-    ├── CMakeLists.txt          
+    ├── CMakeLists.txt
     ├── config/
     │   └── config.json
     ├── assets/
     └── src/
         ├── main.cpp
-        ├── ConfigManager.h         # 客户端独立的配置管理器(单例)
-        ├── ConfigManager.cpp       # 负责读取 client_config.json
-        ├── model/                  # C++ Models    
-        │   ├── AuthManager.h       # 负责登录/注册的网络请求
-        │   └── AuthManager.cpp     # 包含密码哈希与 QML 接口实现
-        ├── view/                # QML Files      
+        ├── ConfigManager.h     # 客户端独立的配置管理器(单例)
+        ├── ConfigManager.cpp
+        ├── model/              # C++ Models
+        │   ├── AuthManager.h   # 负责登录/注册的网络请求定义
+        │   └── AuthManager.cpp
+        ├── view/               # QML Files
         │   └── Main.qml
         └── components/         # 通用 QML 组件
 ```

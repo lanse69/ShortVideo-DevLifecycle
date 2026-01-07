@@ -1,18 +1,55 @@
 version: '3'
 services:
-  # 数据库 (PostgreSQL)
-  postgres:
+  # 数据库主库 (Master - Read/Write)
+  postgres_master:
     image: postgres:15
     container_name: lepai_pg
     environment:
       POSTGRES_USER: lepai_admin
       POSTGRES_PASSWORD: lepai_password
       POSTGRES_DB: lepai_db
+    command: >
+      postgres 
+      -c wal_level=replica 
+      -c hot_standby=on 
+      -c max_wal_senders=10 
+      -c max_replication_slots=10 
+      -c hot_standby_feedback=on
     ports:
-      - "5432:5432"
+      - "5432:5432" # 主库对外端口
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
-      - pg_data:/var/lib/postgresql/data
+      - pg_master_data:/var/lib/postgresql/data
+    networks:
+      - lepai_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lepai_admin -d lepai_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 数据库从库 (Slave - Read Only)
+  postgres_slave:
+    image: postgres:15
+    container_name: lepai_pg_slave
+    depends_on:
+      postgres_master:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: lepai_repl_pass
+    command: >
+      bash -c "
+      if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+        echo '正在从主库克隆数据...';
+        pg_basebackup -h lepai_pg -p 5432 -U lepai_repl -D /var/lib/postgresql/data -Fp -Xs -P -R;
+      fi;
+      chmod 700 /var/lib/postgresql/data;
+      docker-entrypoint.sh postgres
+      "
+    ports:
+      - "5433:5432" # 从库对外映射 5433 端口
+    volumes:
+      - pg_slave_data:/var/lib/postgresql/data
     networks:
       - lepai_net
 
@@ -27,7 +64,7 @@ services:
     networks:
       - lepai_net
 
-  # 对象存储 (MinIO - 替代 OSS)
+  # 对象存储 (MinIO)
   minio:
     image: minio/minio
     container_name: lepai_minio
@@ -44,7 +81,8 @@ services:
       - lepai_net
 
 volumes:
-  pg_data:
+  pg_master_data:
+  pg_slave_data:
   redis_data:
   minio_data:
 

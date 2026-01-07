@@ -1,3 +1,6 @@
+-- 创建复制专用用户
+CREATE ROLE lepai_repl WITH REPLICATION LOGIN PASSWORD 'lepai_repl_pass';
+
 -- 用户表
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(64) PRIMARY KEY,
@@ -12,5 +15,6 @@ CREATE TABLE IF NOT EXISTS videos (
     user_id VARCHAR(64) REFERENCES users(id),
     title VARCHAR(100),
     url VARCHAR(255),
+    like_count BIGINT DEFAULT 0,
     status INT DEFAULT 0 -- 0:Processing, 1:Published
 );

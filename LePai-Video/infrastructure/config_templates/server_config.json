@@ -1,6 +1,8 @@
 {
-    "db_host": "{{PC1_IP}}",
-    "db_port": 5432,
+    "db_master_host": "{{PC1_IP}}",
+    "db_master_port": 5432,
+    "db_slave_host": "{{PC1_IP}}",
+    "db_slave_port": 5433,
     "redis_host": "{{PC1_IP}}",
     "minio_host": "{{PC1_IP}}",
     "server_role": "api_service"

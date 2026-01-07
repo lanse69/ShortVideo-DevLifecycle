@@ -25,18 +25,28 @@ bool ConfigManager::loadConfig(const QString& configPath) {
     return true;
 }
 
-QString ConfigManager::getDbHost() const { 
-  return m_config["db_host"].toString("127.0.0.1"); 
+// 主库配置 (默认 5432)
+QString ConfigManager::getDbMasterHost() const { 
+    return m_config["db_master_host"].toString("127.0.0.1"); 
 }
 
-int ConfigManager::getDbPort() const { 
-  return m_config["db_port"].toInt(5432); 
+int ConfigManager::getDbMasterPort() const { 
+    return m_config["db_master_port"].toInt(5432); 
+}
+
+// 从库配置 (默认 5433)
+QString ConfigManager::getDbSlaveHost() const { 
+    return m_config["db_slave_host"].toString("127.0.0.1"); 
+}
+
+int ConfigManager::getDbSlavePort() const { 
+    return m_config["db_slave_port"].toInt(5433); 
 }
 
 QString ConfigManager::getRedisHost() const { 
-  return m_config["redis_host"].toString("127.0.0.1"); 
+    return m_config["redis_host"].toString("127.0.0.1"); 
 }
 
 QString ConfigManager::getMinioHost() const { 
-  return m_config["minio_host"].toString("127.0.0.1"); 
+    return m_config["minio_host"].toString("127.0.0.1"); 
 }

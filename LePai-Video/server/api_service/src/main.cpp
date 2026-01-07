@@ -3,6 +3,7 @@
 #include <QDebug>
 
 #include "config_manager.h"
+#include "SyncScheduler.h"
 
 int main(int argc, char *argv[]) {
     QCoreApplication a(argc, argv);
@@ -16,17 +17,44 @@ int main(int argc, char *argv[]) {
 
     auto& cfg = ConfigManager::instance();
     qInfo() << "Starting API Server...";
-    qInfo() << "DB Host:" << cfg.getDbHost();
 
-    // 配置 Drogon 数据库连接
+    // 配置数据库客户端 (读写分离)
+    // [Client 1] 主库 (Master) - 用于写入 (Register, Upload, Like)
+    qInfo() << "Master DB:" << cfg.getDbMasterHost() << ":" << cfg.getDbMasterPort();
     drogon::app().createDbClient("postgresql", 
-        cfg.getDbHost().toStdString(),
-        cfg.getDbPort(),
-        "lepai_db",      // DB Name
-        "lepai_admin",   // User
-        "lepai_password",// Password
-        1                // 连接池大小
+        cfg.getDbMasterHost().toStdString(),
+        cfg.getDbMasterPort(),
+        "lepai_db",      
+        "lepai_admin",   
+        "lepai_password",
+        1,               // 连接池大小
+        "default"
     );
+    // [Client 2] 从库 (Slave) - 用于读取 (GetFeed, GetUserInfo)
+    qInfo() << "Slave DB :" << cfg.getDbSlaveHost() << ":" << cfg.getDbSlavePort();
+    drogon::app().createDbClient("postgresql", 
+        cfg.getDbSlaveHost().toStdString(),
+        cfg.getDbSlavePort(),
+        "lepai_db",
+        "lepai_admin",
+        "lepai_password",
+        5,               
+        "slave"
+    );
+
+    // 配置 Redis 客户端
+    qInfo() << "Redis Host:" << cfg.getRedisHost();
+    drogon::app().createRedisClient(
+        cfg.getRedisHost().toStdString(),
+        6379,
+        "default",
+        ""
+    );
+
+    // 启动定时同步任务
+    drogon::app().getLoop()->runEvery(10.0, []() {
+        SyncScheduler::syncLikesToDB(); 
+    });
 
     // 配置监听端口
     drogon::app().addListener("0.0.0.0", 8080);

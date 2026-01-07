@@ -1,8 +1,19 @@
+# 停止并删除旧容器和卷
+sudo docker-compose down -v
+
+sudo docker volume prune -f
+
+sudo docker rm -f lepai_pg
+
+sudo docker-compose down -v --remove-orphans
+
+# 查看从库日志
+sudo docker logs lepai_pg_slave
+
 # 启动docker
-docker-compose up -d
+sudo docker-compose up -d
 
 # 确保 Docker 容器在运行
-# 应该能看到 postgres, redis, minio
 sudo docker ps
 
 # 进入 PostgreSQL 容器
