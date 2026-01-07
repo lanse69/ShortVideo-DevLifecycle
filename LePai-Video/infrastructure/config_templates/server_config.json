@@ -1,0 +1,7 @@
+{
+    "db_host": "{{PC1_IP}}",
+    "db_port": 5432,
+    "redis_host": "{{PC1_IP}}",
+    "minio_host": "{{PC1_IP}}",
+    "server_role": "api_service"
+}

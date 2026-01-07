@@ -1,0 +1,53 @@
+version: '3'
+services:
+  # 数据库 (PostgreSQL)
+  postgres:
+    image: postgres:15
+    container_name: lepai_pg
+    environment:
+      POSTGRES_USER: lepai_admin
+      POSTGRES_PASSWORD: lepai_password
+      POSTGRES_DB: lepai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - lepai_net
+
+  # 缓存 (Redis)
+  redis:
+    image: redis:7
+    container_name: lepai_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lepai_net
+
+  # 对象存储 (MinIO - 替代 OSS)
+  minio:
+    image: minio/minio
+    container_name: lepai_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lepai_minio
+      MINIO_ROOT_PASSWORD: lepai_minio_pass
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - lepai_net
+
+volumes:
+  pg_data:
+  redis_data:
+  minio_data:
+
+networks:
+  lepai_net:
+    driver: bridge

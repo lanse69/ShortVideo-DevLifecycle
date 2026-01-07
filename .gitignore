@@ -35,18 +35,14 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 
-# qtcreator generated files
 *.pro.user*
 *.qbs.user*
 CMakeLists.txt.user*
 
-# xemacs temporary files
 *.flc
 
-# Vim temporary files
 .*.swp
 
-# Visual Studio generated files
 *.ib_pdb_index
 *.idb
 *.ilk
@@ -61,19 +57,14 @@ CMakeLists.txt.user*
 *.vcxproj
 *vcxproj.*
 
-# MinGW generated files
 *.Debug
 *.Release
 
-# Python byte code
 *.pyc
 
-# Binaries
-# --------
 *.dll
 *.exe
 
-# Directories with generated files
 .moc/
 .obj/
 .pch/
@@ -81,12 +72,18 @@ CMakeLists.txt.user*
 .uic/
 /build*/
 
-# added by stardust
 *.qmlproject.user*
+.idea/
+.vscode/
+*.user
 
-#vpp
 *vpp.bak_*
 *vpp.vbak
 *vpp.lck
 
 build/
+cmake-build-*/
+
+LePai-Video/server/config/config.json
+LePai-Video/client/config/config.json
+LePai-Video/server/bin/config.json
