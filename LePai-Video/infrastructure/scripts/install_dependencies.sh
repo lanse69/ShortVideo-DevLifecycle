@@ -16,6 +16,34 @@ else
     exit 1
 fi
 
+install_drogon_source() {
+    echo "------------------------------------------"
+    echo "开始编译安装 Drogon..."
+    echo "------------------------------------------"
+
+    # 创建临时构建目录
+    BUILD_DIR="/tmp/drogon_build"
+    rm -rf $BUILD_DIR
+    mkdir -p $BUILD_DIR
+    cd $BUILD_DIR
+
+    # 克隆 Drogon
+    echo "正在克隆 Drogon 仓库..."
+    git clone https://github.com/drogonframework/drogon
+    cd drogon
+    git checkout v1.9.7
+    git submodule update --init
+
+    mkdir build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j$(nproc)
+    sudo make install
+
+    echo "Drogon 安装完成！清理临时文件..."
+    rm -rf $BUILD_DIR
+}
+
 install_ubuntu() {
     echo "正在使用 APT 安装依赖 (需要 sudo 权限)..."
     sudo apt update
@@ -23,9 +51,12 @@ install_ubuntu() {
     # 基础编译工具
     sudo apt install -y build-essential cmake git gdb
     
-    # Qt6 全家桶
+    # Drogon 依赖 (Jsoncpp, UUID, Zlib, OpenSSL)
+    sudo apt install -y libjsoncpp-dev uuid-dev zlib1g-dev libssl-dev
+    
+    # Qt6
     sudo apt install -y qt6-base-dev qt6-declarative-dev qt6-tools-dev qt6-l10n-tools
-    sudo apt install -y qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtmultimedia libqt6networkauth6-dev
+    sudo apt install -y qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtmultimedia libqt6networkauth6-dev libqt6sql6-psql
     
     # 数据库驱动 (libpqxx)
     sudo apt install -y libpqxx-dev
@@ -38,6 +69,8 @@ install_ubuntu() {
     
     # Docker & Docker Compose
     sudo apt install -y docker.io docker-compose
+    
+    install_drogon_source
 
     echo "依赖安装完成！"
 }
@@ -55,7 +88,7 @@ install_manjaro() {
     sudo pacman -S --noconfirm qt6-base qt6-declarative qt6-tools qt6-multimedia qt6-svg
     
     # 数据库驱动
-    sudo pacman -S --noconfirm libpqxx
+    sudo pacman -S --noconfirm libpqxx postgresql-libs
     
     # 媒体处理
     sudo pacman -S --noconfirm opencv ffmpeg
@@ -65,6 +98,10 @@ install_manjaro() {
 
     # Docker & Docker Compose
     sudo pacman -S --noconfirm docker docker-compose
+    
+    sudo pacman -S --noconfirm jsoncpp libutil-linux zlib openssl
+    
+    install_drogon_source
 
     echo "依赖安装完成！"
 }

@@ -87,3 +87,4 @@ cmake-build-*/
 LePai-Video/server/config/config.json
 LePai-Video/client/config/config.json
 LePai-Video/server/bin/config.json
+LePai-Video/client/bin/config.json

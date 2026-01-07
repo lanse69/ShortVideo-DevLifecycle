@@ -1,0 +1,9 @@
+# 启动docker
+docker-compose up -d
+
+# 确保 Docker 容器在运行
+# 应该能看到 postgres, redis, minio
+sudo docker ps
+
+# 进入 PostgreSQL 容器
+sudo docker exec -it lepai_pg psql -U lepai_admin -d lepai_db

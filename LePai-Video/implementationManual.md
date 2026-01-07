@@ -38,7 +38,7 @@
 ## 3. 代码管理规范
 
 ### 3.1 目录结构
-```text
+```text      
 LePai-Video/
 ├── docs/
 ├── infrastructure/
@@ -48,39 +48,47 @@ LePai-Video/
 │   ├── config_templates/       # 存放配置文件模板
 │   │   ├── server_config.json
 │   │   └── client_config.json
-│   ├── scripts/                # 存放配置脚本
+│   ├── scripts/                # 存放配置脚本                
 │   │   ├── install_dependencies.sh
 │   │   ├── setup_docker.sh
-│   │   └── configure_env.sh    # 生成具体的配置
+│   │   └── configure_env.sh  # 生成具体的配置
 │   └── sql/
-│       └── init.sql            # 数据库初始化脚本
+│       └── init.sql          # 数据库初始化脚本
 ├── server/                     # 【后端组】
-│   ├── CMakeLists.txt          # 服务端构建配置
-│   ├── config/                 # 存放生成的服务端配置
+│   ├── CMakeLists.txt          
+│   ├── config/                 
 │   │   └── config.json
-│   ├── api_service/            # 核心业务代码
+│   ├── api_service/            # 核心业务服务
 │   │   ├── CMakeLists.txt
-│   │   └── src/main.cpp
-│   ├── video_worker/           # 转码代码
+│   │   └── src/
+│   │       ├── main.cpp
+│   │       ├── UserController.h    # 用户注册相关接口定义
+│   │       └── UserController.cpp  # 用户注册业务逻辑实现
+│   ├── video_worker/           # 转码服务
 │   │   ├── CMakeLists.txt
-│   │   └── src/main.cpp
+│   │   └── src/
+│   │       └── main.cpp
 │   └── common/                 # 公共库
 │       ├── CMakeLists.txt
 │       ├── src/
 │       │   ├── config_manager.cpp
-│       │   └── utils.cpp
+│       │   └── utils.cpp           # 包含 UUID 生成和 SHA256 哈希实现
 │       └── include/
 │           ├── config_manager.h
-│           └── utils.h
+│           └── utils.h             # 工具类头文件
 └── client/                     # 【客户端组】
-    ├── CMakeLists.txt          # 客户端构建配置
+    ├── CMakeLists.txt          
     ├── config/
     │   └── config.json
     ├── assets/
     └── src/
         ├── main.cpp
-        ├── model/              # C++ Models
-        ├── view/               # QML Files
+        ├── ConfigManager.h         # 客户端独立的配置管理器(单例)
+        ├── ConfigManager.cpp       # 负责读取 client_config.json
+        ├── model/                  # C++ Models    
+        │   ├── AuthManager.h       # 负责登录/注册的网络请求
+        │   └── AuthManager.cpp     # 包含密码哈希与 QML 接口实现
+        ├── view/                # QML Files      
         │   └── Main.qml
         └── components/         # 通用 QML 组件
 ```
