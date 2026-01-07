@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo "=========================================="
 echo "   LePai-Video 开发环境自动化安装向导"
 echo "=========================================="
@@ -33,6 +35,9 @@ install_ubuntu() {
     
     # SSL
     sudo apt install -y libssl-dev
+    
+    # Docker & Docker Compose
+    sudo apt install -y docker.io docker-compose
 
     echo "依赖安装完成！"
 }
@@ -58,6 +63,9 @@ install_manjaro() {
     # SSL
     sudo pacman -S --noconfirm openssl
 
+    # Docker & Docker Compose
+    sudo pacman -S --noconfirm docker docker-compose
+
     echo "依赖安装完成！"
 }
 
@@ -70,8 +78,7 @@ case $ID in
         install_manjaro
         ;;
     *)
-        echo "❌ 不支持的发行版: $ID"
-        echo "请参考 infrastructure/README.md 手动安装：Qt6, libpqxx, OpenCV, FFmpeg"
+        echo "不支持的发行版: $ID"
         exit 1
         ;;
 esac
@@ -79,4 +86,5 @@ esac
 echo ""
 echo "环境准备就绪。下一步："
 echo "1. 运行配置脚本: configure_env.sh"
-echo "2. 开始编译项目"
+echo "2. 运行 setup_docker.sh 配置 Docker 环境"
+echo "3. 开始编译项目"

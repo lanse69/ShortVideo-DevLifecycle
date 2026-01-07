@@ -50,6 +50,7 @@ LePai-Video/
 │   │   └── client_config.json
 │   ├── scripts/                # 存放配置脚本
 │   │   ├── install_dependencies.sh
+│   │   ├── setup_docker.sh
 │   │   └── configure_env.sh    # 生成具体的配置
 │   └── sql/
 │       └── init.sql            # 数据库初始化脚本
