@@ -1,0 +1,35 @@
+sudo rm /var/lib/pacman/db.lck
+
+# 停止本地 PostgreSQL
+sudo systemctl stop postgresql
+sudo systemctl disable postgresql
+
+# 停止本地 Redis
+sudo systemctl stop redis
+sudo systemctl stop redis-server
+sudo systemctl disable redis
+sudo systemctl disable redis-server
+
+# 强制删除创建失败的 lepai 开头的容器
+sudo docker rm -f lepai_pg lepai_redis lepai_minio
+
+# 删除配置文件
+sudo rm /etc/docker/daemon.json
+
+# 手动更新配置文件
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://huecker.io",
+    "https://dockerhub.timeweb.cloud",
+    "https://noohub.ru",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ]
+}
+EOF
+
+# 重启 Docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker

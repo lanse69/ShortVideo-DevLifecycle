@@ -36,17 +36,17 @@ if [ ! -f "$DAEMON_JSON" ]; then
         echo "正在写入配置到 $DAEMON_JSON ..."
         sudo mkdir -p /etc/docker
         sudo bash -c 'cat <<EOF > /etc/docker/daemon.json
-		{
-		  "registry-mirrors": [
-		    "https://docker.m.daocloud.io",
-		    "https://huecker.io",
-		    "https://dockerhub.timeweb.cloud",
-		    "https://noohub.ru"
-		    "https://hub-mirror.c.163.com",
-		    "https://mirror.baidubce.com"
-		  ]
-		}
-		EOF'
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://huecker.io",
+    "https://dockerhub.timeweb.cloud",
+    "https://noohub.ru",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ]
+}
+EOF'
         sudo systemctl restart docker
         echo "镜像加速配置已完成。"
     fi
