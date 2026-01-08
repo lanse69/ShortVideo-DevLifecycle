@@ -9,16 +9,13 @@ Rectangle {
 
     signal videoSelected(string filePath)
 
-    // 屏幕宽度，用于自适应
-    property int screenWidth: parent ? parent.width : 375
-    property int screenHeight: parent ? parent.height : 667
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
 
-        // 第一行：视频录制预览区域 - 占满上部
+        // 第一行：视频录制预览区域
         Rectangle {
+            id: previewArea
             Layout.fillWidth: true
             Layout.fillHeight: true
             color: "#222222"
@@ -27,65 +24,70 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "录制视频预览区域"
                 color: "white"
-                font.pixelSize: screenWidth * 0.05  // 自适应字体大小
+                font.pixelSize: parent.width * 0.05
             }
         }
 
         // 第二行：控制按钮区域
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: screenHeight * 0.15  // 15%高度
+            Layout.preferredHeight: Math.min(parent.height * 0.15, 150)
             color: "#000000"
 
-            // 三个矩形并列
-            Row {
+            Item {
                 anchors.centerIn: parent
-                spacing: screenWidth * 0.1  // 10%宽度作为间距
+                width: Math.min(parent.width * 0.8, 300)
+                height: parent.height  // 容器高度跟随父容器
 
                 // 左边：上传按钮
                 Button {
-                    width: screenWidth * 0.15  // 15%宽度
-                    height: screenWidth * 0.15  // 保持正方形
+                    id: uploadBtn
+                    width: Math.min(parent.width * 0.25, 60)
+                    height: width  // 关键：保持正方形，width = height
                     anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
                     background: Rectangle {
                         color: "#666666"
-                        radius: width / 2  // 圆形
+                        radius: uploadBtn.width / 2  // 半径 = 宽度/2，确保圆形
                     }
                     contentItem: Text {
                         text: "上传"
                         color: "white"
-                        font.pixelSize: screenWidth * 0.04  // 自适应字体
+                        font.pixelSize: Math.max(11, uploadBtn.width * 0.3)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        anchors.centerIn: parent
                     }
                     onClicked: fileDialog.open()
                 }
 
                 // 中间：拍摄按钮
                 Rectangle {
-                    width: screenWidth * 0.18  // 18%宽度
-                    height: screenWidth * 0.18  // 保持正方形
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: width / 2  // 圆形
+                    id: recordBtn
+                    width: Math.min(parent.width * 0.30, 90)
+                    height: width  // 关键：保持正方形
+                    anchors.centerIn: parent
+                    radius: width / 2  // 圆形边框
                     color: "transparent"
                     border.color: "#FF2C5C"
                     border.width: 3
 
                     Rectangle {
+                        id: innerCircle
                         anchors.centerIn: parent
-                        width: parent.width * 0.7  // 70%大小
-                        height: parent.width * 0.7
-                        radius: width / 2  // 圆形
+                        width: recordBtn.width * 0.6  // 内圆直径 = 外圆的60%
+                        height: width  // 保持正方形
+                        radius: width / 2  // 圆形内圆
                         color: "#FF2C5C"
                     }
                 }
 
                 // 右边：空白矩形
                 Rectangle {
-                    width: screenWidth * 0.15  // 15%宽度
-                    height: screenWidth * 0.15
+                    id: placeholder
+                    width: Math.min(parent.width * 0.25, 60)
+                    height: width  // 保持正方形
                     anchors.verticalCenter: parent.verticalCenter
+                    anchors.right: parent.right
                     color: "#000000"
                 }
             }
@@ -96,9 +98,6 @@ Rectangle {
         id: fileDialog
         title: "选择视频文件"
         nameFilters: ["视频文件 (*.mp4 *.mov *.avi)", "所有文件 (*)"]
-        onAccepted: {
-            console.log("选择的文件:", currentFile)
-            videoSelected(currentFile)
-        }
+        onAccepted: videoSelected(currentFile)
     }
 }

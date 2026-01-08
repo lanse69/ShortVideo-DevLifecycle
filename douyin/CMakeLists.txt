@@ -15,6 +15,7 @@ if(ANDROID)
     set_target_properties(appdouyin PROPERTIES
         QT_ANDROID_APP_NAME "乐拍视界"
         QT_ANDROID_PACKAGE_NAME "com.baixiang.lepaishijie"
+        # QT_ANDROID_APP_RESOURCES_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android/res"
         # QT_ANDROID_APP_ICON "@drawable/icon"
     )
 
@@ -40,40 +41,42 @@ qt_add_qml_module(appdouyin
     QML_FILES HomeTab.qml
     QML_FILES HomeTopBar.qml
     QML_FILES HomeVideoArea.qml
-    QML_FILES FriendsTab.qml
-    QML_FILES FriendTopBar.qml
-    QML_FILES FriendVideoArea.qml
     QML_FILES PostVideoTab.qml
     QML_FILES ProfileTab.qml
     QML_FILES ProfileLikes.qml
     QML_FILES ProfileWroks.qml
     QML_FILES HomeFollowPage.qml
-    QML_FILES
     QML_FILES CaptureUploadPage.qml
     QML_FILES EditPage.qml
     QML_FILES PublishPage.qml
-    RESOURCES icons.qrc
-    RESOURCES android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
-    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
-    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
-    RESOURCES android/AndroidManifest.xml android/build.gradle android/res/values/libs.xml android/res/xml/qtprovider_paths.xml android/gradle/wrapper/gradle-wrapper.jar android/gradle/wrapper/gradle-wrapper.properties android/gradle.properties android/gradlew android/gradlew.bat
+    QML_FILES LoginPage.qml
+    RESOURCES
+           icons.qrc
+           android/AndroidManifest.xml
+           android/build.gradle
+           android/res/values/libs.xml
+           android/res/xml/qtprovider_paths.xml
+
 )
 
 source_group("QML Files" FILES
-    Main.qml Content.qml     QML_FILES BottomBar.qml
-    QML_FILES HomeTab.qml
-    QML_FILES HomeTopBar.qml
-    QML_FILES HomeVideoArea.qml
-    QML_FILES FriendsTab.qml
-    QML_FILES FriendTopBar.qml
-    QML_FILES FriendVideoArea.qml
-    QML_FILES PostVideoTab.qml
-    QML_FILES ProfileTab.qml
-    QML_FILES ProfileLikes.qml
-    QML_FILES ProfileWroks.qml
-    QML_FILES HomeFollowPage.qml
+    Main.qml Content.qml     BottomBar.qml
+    HomeTab.qml
+    HomeTopBar.qml
+    PostVideoTab.qml
+    ProfileTab.qml
+    ProfileLikes.qml
+    ProfileWroks.qml
+    CaptureUploadPage.qml
+    EditPage.qml
+    PublishPage.qml
+    LoginPage.qml
 )
 
+source_group("WatchVideo Files" FILES
+    HomeVideoArea.qml
+    HomeFollowPage.qml
+)
 target_compile_features(appdouyin PRIVATE cxx_std_23)
 
 target_link_libraries(appdouyin

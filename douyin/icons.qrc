@@ -2,4 +2,6 @@
     <qresource prefix="/icon">
         <file>icons/douyin.jpg</file>
     </qresource>
+    <qresource prefix="/">
+    </qresource>
 </RCC>
