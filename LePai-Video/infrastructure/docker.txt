@@ -1,12 +1,3 @@
-# 停止并删除旧容器和卷
-sudo docker-compose down -v
-
-sudo docker volume prune -f
-
-sudo docker rm -f lepai_pg
-
-sudo docker-compose down -v --remove-orphans
-
 # 查看从库日志
 sudo docker logs lepai_pg_slave
 
@@ -18,3 +9,50 @@ sudo docker ps
 
 # 进入 PostgreSQL 容器
 sudo docker exec -it lepai_pg psql -U lepai_admin -d lepai_db
+
+# 检查主库是否处于恢复模式 (只读模式)
+sudo docker exec lepai_pg psql -U lepai_admin -d lepai_db -c "select pg_is_in_recovery();"
+
+# 停止并删除旧容器和卷
+sudo docker-compose down
+
+sudo docker-compose down -v
+
+sudo docker volume prune -f
+
+sudo docker rm -f lepai_pg
+
+sudo docker volume rm infrastructure_pg_master_data
+sudo docker volume rm infrastructure_pg_slave_data
+sudo docker volume rm infrastructure_redis_data
+
+sudo docker-compose down -v --remove-orphans
+
+# 停止并删除所有正在运行的容器
+docker stop $(docker ps -aq) 2>/dev/null
+docker rm $(docker ps -aq) 2>/dev/null
+
+# 删除所有网络
+docker network prune -f
+
+# 删除所有数据卷
+docker volume rm $(docker volume ls -q) 2>/dev/null
+
+# 执行系统级彻底清理
+docker system prune -a --volumes -f
+
+# 强制停止所有正在运行的容器
+sudo docker stop $(sudo docker ps -q)
+
+# 删除所有容器实例
+sudo docker rm $(sudo docker ps -aq)
+
+# 删除 PG 主库卷
+sudo docker volume rm infrastructure_pg_master_data
+
+# 删除 PG 从库卷
+sudo docker volume rm infrastructure_pg_slave_data
+
+# 删除其他卷
+sudo docker volume rm infrastructure_redis_data
+sudo docker volume rm infrastructure_minio_data

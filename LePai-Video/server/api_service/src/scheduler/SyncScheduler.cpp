@@ -1,16 +1,27 @@
 #include "SyncScheduler.h"
 
-#include <drogon/drogon.h>
 #include <QDebug>
+
+namespace lepai {
+namespace scheduler {
 
 void SyncScheduler::syncLikesToDB() {
     auto redis = drogon::app().getRedisClient();
     auto db = drogon::app().getDbClient("default"); // 用主库写入
 
-    // 从 dirty_videos 集合中弹出所有 ID (SPOP count)
+    // 安全检查
+    if (!redis) {
+        qWarning() << "[Sync] Redis client not available.";
+        return;
+    }
+    if (!db) {
+        qCritical() << "[Sync] DB client 'default' not available.";
+        return;
+    }
+
+    // 从 Redis 的脏数据集合中取出最多 100 个待同步的视频 ID
     redis->execCommandAsync(
         [redis, db](const drogon::nosql::RedisResult &r) {
-            // 检查返回值类型是否为空
             if (r.type() == drogon::nosql::RedisResultType::kNil || r.asArray().empty()) {
                 return; // 没有需要同步的数据
             }
@@ -28,27 +39,30 @@ void SyncScheduler::syncLikesToDB() {
                         if (countResult.type() == drogon::nosql::RedisResultType::kInteger) {
                             long long likes = countResult.asInteger();
                             
-                            // 写入 PostgreSQL
+                            // 异步写入 PostgreSQL
                             db->execSqlAsync(
                                 "UPDATE videos SET like_count = $1 WHERE id = $2",
                                 [](const drogon::orm::Result &r){},
                                 [](const drogon::orm::DrogonDbException &e){
-                                    qCritical() << "[Sync Error]" << e.base().what();
+                                    qCritical() << "[Sync Error] DB Update failed:" << e.base().what();
                                 },
                                 likes, vid
                             );
                         }
                     },
                     [](const std::exception &e){
-                         qCritical() << "[Sync Error] Failed to get likes count:" << e.what();
+                         qCritical() << "[Sync Error] Redis GET failed:" << e.what();
                     },
                     "GET %s", key.c_str()
                 );
             }
         },
         [](const std::exception &e) {
-            qCritical() << "[Sync Error] Failed to get dirty set:" << e.what();
+            qCritical() << "[Sync Error] Redis SPOP failed:" << e.what();
         },
         "SPOP dirty_videos 100" 
     );
 }
+
+} // namespace scheduler
+} // namespace lepai

@@ -53,7 +53,6 @@ LePai-Video/
 │   │   ├── setup_docker.sh     # Docker环境部署脚本
 │   │   └── configure_env.sh    # 生成具体的配置
 │   └── sql/
-│       └── init.sql            # 数据库初始化脚本，包含复制用户创建与表结构
 ├── server/                     # 【后端组】
 │   ├── CMakeLists.txt          # 服务端构建配置
 │   ├── config/                 # 存放生成的服务端配置
@@ -61,25 +60,13 @@ LePai-Video/
 │   ├── api_service/            # 核心业务服务
 │   │   ├── CMakeLists.txt
 │   │   └── src/
-│   │       ├── main.cpp            # 服务入口，初始化主从DB、Redis连接及定时同步任务
-│   │       ├── UserController.h    # 用户注册相关接口定义
-│   │       ├── UserController.cpp  # 用户注册业务逻辑实现，直接写入主库
-│   │       ├── LikeController.h    # 视频点赞接口定义
-│   │       ├── LikeController.cpp  # 视频点赞业务逻辑，利用Redis进行高并发缓冲
-│   │       ├── SyncScheduler.h     # 数据同步调度器定义
-│   │       └── SyncScheduler.cpp
 │   ├── video_worker/           # 转码服务
 │   │   ├── CMakeLists.txt
 │   │   └── src/
-│   │       └── main.cpp
 │   └── common/                 # 公共库
 │       ├── CMakeLists.txt
 │       ├── src/
-│       │   ├── config_manager.cpp  # 配置读取实现
-│       │   └── utils.cpp           # 通用工具实现
 │       └── include/
-│           ├── config_manager.h    # 配置管理器头文件
-│           └── utils.h             # 通用工具类头文件
 └── client/                     # 【客户端组】
     ├── CMakeLists.txt
     ├── config/

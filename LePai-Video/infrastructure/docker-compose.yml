@@ -16,7 +16,7 @@ services:
       -c max_replication_slots=10 
       -c hot_standby_feedback=on
     ports:
-      - "5432:5432" # 主库对外端口
+      - "5432:5432"
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
       - pg_master_data:/var/lib/postgresql/data
@@ -47,7 +47,7 @@ services:
       docker-entrypoint.sh postgres
       "
     ports:
-      - "5433:5432" # 从库对外映射 5433 端口
+      - "5433:5432"
     volumes:
       - pg_slave_data:/var/lib/postgresql/data
     networks:

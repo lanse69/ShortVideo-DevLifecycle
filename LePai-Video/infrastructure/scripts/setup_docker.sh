@@ -49,7 +49,8 @@ if [ ! -f "$DAEMON_JSON" ]; then
     "https://dockerhub.timeweb.cloud",
     "https://noohub.ru",
     "https://hub-mirror.c.163.com",
-    "https://mirror.baidubce.com"
+    "https://mirror.baidubce.com",
+    "https://docker.mirrors.ustc.edu.cn"
   ]
 }
 EOF'

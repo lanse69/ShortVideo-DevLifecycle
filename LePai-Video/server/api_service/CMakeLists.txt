@@ -11,7 +11,8 @@ add_executable(api_service
 target_link_libraries(api_service PRIVATE 
     Drogon::Drogon
     lepai_common
-    Qt6::Core 
+    PostgreSQL::PostgreSQL
+    Qt6::Core
     Qt6::Sql
 )
 

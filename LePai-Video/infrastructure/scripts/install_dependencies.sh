@@ -51,15 +51,15 @@ install_ubuntu() {
     # 基础编译工具
     sudo apt install -y build-essential cmake git gdb
     
-    # Drogon 依赖 (Jsoncpp, UUID, Zlib, OpenSSL)
-    sudo apt install -y libjsoncpp-dev uuid-dev zlib1g-dev libssl-dev
+    # Drogon 依赖 (Jsoncpp, UUID, Zlib)
+    sudo apt install -y libjsoncpp-dev uuid-dev zlib1g-dev
     
     # Qt6
     sudo apt install -y qt6-base-dev qt6-declarative-dev qt6-tools-dev qt6-l10n-tools
     sudo apt install -y qml6-module-qtquick-controls qml6-module-qtquick-layouts qml6-module-qtmultimedia libqt6networkauth6-dev libqt6sql6-psql
     
     # 数据库驱动 (libpqxx)
-    sudo apt install -y libpqxx-dev
+    sudo apt install -y libpqxx-dev libpq-dev postgresql-server-dev-all postgresql-client
     
     # 媒体处理 (FFmpeg + OpenCV)
     sudo apt install -y libopencv-dev libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libswscale-dev
@@ -99,7 +99,7 @@ install_manjaro() {
     # Docker & Docker Compose
     sudo pacman -S --noconfirm docker docker-compose
     
-    sudo pacman -S --noconfirm jsoncpp libutil-linux zlib openssl
+    sudo pacman -S --noconfirm jsoncpp libutil-linux zlib
     
     install_drogon_source
 

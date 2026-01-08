@@ -1,0 +1,44 @@
+#pragma once
+
+#include <string>
+#include <functional>
+#include <json/json.h>
+#include <memory>
+
+#include "../../infrastructure/repository/UserRepository.h"
+#include "../../infrastructure/repository/SessionRepository.h"
+
+namespace lepai {
+namespace service {
+
+struct LoginResult {
+    bool success;
+    std::string message;
+    std::string token;
+    Json::Value userData;
+};
+
+class UserService {
+public:
+    using RegisterCallback = std::function<void(bool success, const std::string& message)>;
+    using LoginCallback = std::function<void(const LoginResult& result)>;
+    using LogoutCallback = std::function<void(bool success)>;
+
+    UserService();
+
+    // 注册业务逻辑
+    void registerUser(const std::string& username, const std::string& password, RegisterCallback callback);
+
+    // 登录业务逻辑
+    void login(const std::string& username, const std::string& password, LoginCallback callback);
+    
+    // 登出业务逻辑
+    void logout(const std::string& token, LogoutCallback callback);
+
+private:
+    std::shared_ptr<lepai::repository::UserRepository> userRepo;
+    std::shared_ptr<lepai::repository::SessionRepository> sessionRepo;
+};
+
+}
+}

@@ -18,3 +18,6 @@ CREATE TABLE IF NOT EXISTS videos (
     like_count BIGINT DEFAULT 0,
     status INT DEFAULT 0 -- 0:Processing, 1:Published
 );
+
+-- 索引
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
