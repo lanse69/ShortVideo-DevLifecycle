@@ -4,7 +4,7 @@ project(douyin VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick)
+find_package(Qt6 REQUIRED COMPONENTS Quick Multimedia)
 
 qt_standard_project_setup(REQUIRES 6.9) #set(CMAKE_AUTOUIC ON)  set(CMAKE_AUTOMOC ON)
 
@@ -50,13 +50,16 @@ qt_add_qml_module(appdouyin
     QML_FILES EditPage.qml
     QML_FILES PublishPage.qml
     QML_FILES LoginPage.qml
+    QML_FILES Player.qml
     RESOURCES
            icons.qrc
            android/AndroidManifest.xml
            android/build.gradle
            android/res/values/libs.xml
            android/res/xml/qtprovider_paths.xml
-
+           RESOURCES vam.qrc
+           SOURCES musicmodel.h musicmodel.cpp
+           SOURCES musicviewmodel.h musicviewmodel.cpp
 )
 
 source_group("QML Files" FILES
@@ -71,17 +74,25 @@ source_group("QML Files" FILES
     EditPage.qml
     PublishPage.qml
     LoginPage.qml
+    Player.qml
 )
 
 source_group("WatchVideo Files" FILES
     HomeVideoArea.qml
     HomeFollowPage.qml
 )
+
+source_group("PostVideo Files" FILES
+    QML_FILES CaptureUploadPage.qml
+    QML_FILES EditPage.qml
+    QML_FILES PublishPage.qml
+)
 target_compile_features(appdouyin PRIVATE cxx_std_23)
 
 target_link_libraries(appdouyin
     PRIVATE
         Qt6::Quick
+        Qt6::Multimedia
 )
 
 set_target_properties(appdouyin PROPERTIES

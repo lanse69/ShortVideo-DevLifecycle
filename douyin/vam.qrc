@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/vm">
+        <!-- Musics目录下的音乐文件 -->
+        <file>VideosAndMusics/Musics/落了白.mp3</file>
+        <file>VideosAndMusics/Musics/弱水三千.mp3</file>
+        <file>VideosAndMusics/Musics/莫问归期.mp3</file>
+    </qresource>
+</RCC>
+
