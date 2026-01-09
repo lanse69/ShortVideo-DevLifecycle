@@ -1,25 +1,25 @@
 #pragma once
 
-#include <QString>
-#include <QJsonObject>
+#include <string>
+#include <json/json.h>
 
 class ConfigManager {
 public:
     static ConfigManager& instance();
-    bool loadConfig(const QString& configPath);
+    bool loadConfig(const std::string& configPath);
 
     // 主库 (Write)
-    QString getDbMasterHost() const;
+    std::string getDbMasterHost() const;
     int getDbMasterPort() const;
 
     // 从库 (Read)
-    QString getDbSlaveHost() const;
+    std::string getDbSlaveHost() const;
     int getDbSlavePort() const;
 
-    QString getRedisHost() const;
-    QString getMinioHost() const;
+    std::string getRedisHost() const;
+    std::string getMinioHost() const;
 
 private:
     ConfigManager() = default;
-    QJsonObject m_config;
+    Json::Value m_config;
 };

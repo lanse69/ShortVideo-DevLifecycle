@@ -11,7 +11,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # 全局依赖查找
 find_package(Drogon REQUIRED)
 find_package(PostgreSQL REQUIRED)
-find_package(Qt6 REQUIRED COMPONENTS Core Network Sql Concurrent)
+find_package(jsoncpp REQUIRED)
 # find_package(OpenCV REQUIRED)
 # find_package(FFmpeg REQUIRED) # 需要配置 FindFFmpeg.cmake
 

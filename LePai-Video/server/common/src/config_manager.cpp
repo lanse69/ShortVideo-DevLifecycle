@@ -1,52 +1,52 @@
 #include "config_manager.h"
 
-#include <QFile>
-#include <QJsonDocument>
-#include <QDebug>
+#include <fstream>
+#include <iostream>
+#include <drogon/drogon.h>
 
 ConfigManager& ConfigManager::instance() {
     static ConfigManager instance;
     return instance;
 }
 
-bool ConfigManager::loadConfig(const QString& configPath) {
-    QFile file(configPath);
-    if (!file.open(QIODevice::ReadOnly)) {
-        qWarning() << "无法打开配置文件:" << configPath;
+bool ConfigManager::loadConfig(const std::string& configPath) {
+    std::ifstream configFile(configPath, std::ifstream::binary);
+    if (!configFile.is_open()) {
+        LOG_ERROR << "Failed to open config file: " << configPath;
         return false;
     }
-    QByteArray data = file.readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    if (doc.isNull()) {
-        qWarning() << "配置文件格式错误 (非 JSON)";
+
+    Json::CharReaderBuilder builder;
+    std::string errs;
+    if (!Json::parseFromStream(builder, configFile, &m_config, &errs)) {
+        LOG_ERROR << "Config parse error: " << errs;
         return false;
     }
-    m_config = doc.object();
     return true;
 }
 
-// 主库配置 (默认 5432)
-QString ConfigManager::getDbMasterHost() const { 
-    return m_config["db_master_host"].toString("127.0.0.1"); 
+// 主库配置
+std::string ConfigManager::getDbMasterHost() const { 
+    return m_config.get("db_master_host", "127.0.0.1").asString();
 }
 
 int ConfigManager::getDbMasterPort() const { 
-    return m_config["db_master_port"].toInt(5432); 
+    return m_config.get("db_master_port", 5432).asInt();
 }
 
-// 从库配置 (默认 5433)
-QString ConfigManager::getDbSlaveHost() const { 
-    return m_config["db_slave_host"].toString("127.0.0.1"); 
+// 从库配置
+std::string ConfigManager::getDbSlaveHost() const { 
+    return m_config.get("db_slave_host", "127.0.0.1").asString();
 }
 
 int ConfigManager::getDbSlavePort() const { 
-    return m_config["db_slave_port"].toInt(5433); 
+    return m_config.get("db_slave_port", 5433).asInt();
 }
 
-QString ConfigManager::getRedisHost() const { 
-    return m_config["redis_host"].toString("127.0.0.1"); 
+std::string ConfigManager::getRedisHost() const { 
+    return m_config.get("redis_host", "127.0.0.1").asString();
 }
 
-QString ConfigManager::getMinioHost() const { 
-    return m_config["minio_host"].toString("127.0.0.1"); 
+std::string ConfigManager::getMinioHost() const { 
+    return m_config.get("minio_host", "127.0.0.1").asString();
 }

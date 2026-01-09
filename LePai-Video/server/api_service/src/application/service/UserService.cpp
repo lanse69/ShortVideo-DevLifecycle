@@ -1,6 +1,6 @@
 #include "UserService.h"
 
-#include <QDebug>
+#include <drogon/drogon.h>
 
 #include "utils.h"
 
@@ -26,16 +26,16 @@ void UserService::registerUser(const std::string& username, const std::string& p
 
         // 准备实体
         lepai::domain::User newUser;
-        newUser.id = Utils::generateUUID().toStdString();
+        newUser.id = Utils::generateUUID();
         newUser.username = username;
-        newUser.passwordHash = Utils::hashPassword(QString::fromStdString(password)).toStdString();
+        newUser.passwordHash = Utils::hashPassword(password);
 
         // 写入数据库
         userRepo->createUser(newUser, [callback](bool success, const std::string& err) {
             if (success) {
                 callback(true, "Registration successful");
             } else {
-                qCritical() << "Create user DB error:" << err.c_str();
+                LOG_ERROR << "Create user DB error:" << err;
                 callback(false, "Registration failed");
             }
         });
@@ -51,7 +51,7 @@ void UserService::login(const std::string& username, const std::string& password
         }
 
         const auto& user = userOpt.value();
-        std::string inputHash = Utils::hashPassword(QString::fromStdString(password)).toStdString();
+        std::string inputHash = Utils::hashPassword(password);
 
         // 校验密码
         if (inputHash != user.passwordHash) {
@@ -60,7 +60,7 @@ void UserService::login(const std::string& username, const std::string& password
         }
 
         // 生成 Token
-        std::string token = Utils::generateUUID().toStdString();
+        std::string token = Utils::generateUUID();
         // 30天过期
         long ttl = 30 * 24 * 3600; 
 

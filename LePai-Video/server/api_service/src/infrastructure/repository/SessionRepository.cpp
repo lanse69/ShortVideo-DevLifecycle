@@ -1,5 +1,6 @@
 #include "SessionRepository.h"
-#include <QDebug>
+
+#include <drogon/drogon.h>
 
 namespace lepai {
 namespace repository {
@@ -25,7 +26,7 @@ void SessionRepository::saveSession(const std::string& userId, const std::string
                         [](const std::exception&){},
                         "DEL %s", oldTokenKey.c_str()
                     );
-                    qInfo() << "Kicked out old token for user:" << userId.c_str();
+                    LOG_INFO << "Kicked out old token for user:" << userId;
                 }
             }
 

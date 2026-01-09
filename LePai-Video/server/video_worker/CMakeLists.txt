@@ -8,8 +8,8 @@ add_executable(video_worker
 )
 
 target_link_libraries(video_worker PRIVATE 
-    lepai_common 
-    Qt6::Core
+    lepai_common
+    Drogon::Drogon 
 )
 
 add_custom_command(

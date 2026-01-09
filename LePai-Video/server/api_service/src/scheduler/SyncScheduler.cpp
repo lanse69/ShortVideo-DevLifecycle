@@ -1,6 +1,6 @@
 #include "SyncScheduler.h"
 
-#include <QDebug>
+#include <drogon/drogon.h>
 
 namespace lepai {
 namespace scheduler {
@@ -11,11 +11,11 @@ void SyncScheduler::syncLikesToDB() {
 
     // 安全检查
     if (!redis) {
-        qWarning() << "[Sync] Redis client not available.";
+        LOG_WARN << "[Sync] Redis client not available.";
         return;
     }
     if (!db) {
-        qCritical() << "[Sync] DB client 'default' not available.";
+        LOG_WARN << "[Sync] DB client 'default' not available.";
         return;
     }
 
@@ -27,7 +27,7 @@ void SyncScheduler::syncLikesToDB() {
             }
 
             auto videoIds = r.asArray();
-            qDebug() << "[Sync] Syncing" << videoIds.size() << "videos to DB...";
+            LOG_DEBUG << "[Sync] Syncing" << videoIds.size() << "videos to DB...";
 
             for (const auto &item : videoIds) {
                 std::string vid = item.asString();
@@ -44,21 +44,21 @@ void SyncScheduler::syncLikesToDB() {
                                 "UPDATE videos SET like_count = $1 WHERE id = $2",
                                 [](const drogon::orm::Result &r){},
                                 [](const drogon::orm::DrogonDbException &e){
-                                    qCritical() << "[Sync Error] DB Update failed:" << e.base().what();
+                                    LOG_ERROR << "[Sync Error] DB Update failed:" << e.base().what();
                                 },
                                 likes, vid
                             );
                         }
                     },
                     [](const std::exception &e){
-                         qCritical() << "[Sync Error] Redis GET failed:" << e.what();
+                         LOG_ERROR << "[Sync Error] Redis GET failed:" << e.what();
                     },
                     "GET %s", key.c_str()
                 );
             }
         },
         [](const std::exception &e) {
-            qCritical() << "[Sync Error] Redis SPOP failed:" << e.what();
+            LOG_ERROR << "[Sync Error] Redis SPOP failed:" << e.what();
         },
         "SPOP dirty_videos 100" 
     );

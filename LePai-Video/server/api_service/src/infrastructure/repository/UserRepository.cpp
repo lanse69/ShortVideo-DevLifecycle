@@ -1,6 +1,6 @@
 #include "UserRepository.h"
 
-#include <QDebug>
+#include <drogon/drogon.h>
 
 namespace lepai {
 namespace repository {
@@ -8,7 +8,7 @@ namespace repository {
 void UserRepository::findByUsername(const std::string& username, DbResultCallback callback) {
     auto db = drogon::app().getDbClient("slave"); // 读操作走从库
     if (!db) {
-        qCritical() << "CRITICAL: DB Client 'slave' not found!";
+        LOG_ERROR << "CRITICAL: DB Client 'slave' not found!";
         callback(std::nullopt, "Database connection error (slave)");
         return;
     }
@@ -28,7 +28,7 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
                 user.createdAt = r[0]["created_at"].as<std::string>();
                 callback(user, "");
             } catch (const std::exception& e) {
-                qCritical() << "Data parsing error:" << e.what();
+                LOG_ERROR << "Data parsing error:" << e.what();
                 callback(std::nullopt, "Data corruption");
             }
         },

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <QString>
+#include <string>
 
 namespace Utils {
     /**
      * 生成 UUID
      */
-    QString generateUUID();
+    std::string generateUUID();
 
     /**
      * 使用 SHA256 对密码进行哈希
      */
-    QString hashPassword(const QString& plainPassword);
+    std::string hashPassword(const std::string& plainPassword);
 }

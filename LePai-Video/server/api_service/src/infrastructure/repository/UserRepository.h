@@ -20,6 +20,6 @@ public:
     // 创建新用户
     void createUser(const lepai::domain::User& user, CreateCallback callback);
 };
-    
+
 }
 }

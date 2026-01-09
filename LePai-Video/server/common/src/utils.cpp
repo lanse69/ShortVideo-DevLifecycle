@@ -1,17 +1,13 @@
 #include "utils.h"
 
-#include <QUuid>
-#include <QCryptographicHash>
+#include <drogon/utils/Utilities.h>
 
 namespace Utils {
-    QString generateUUID() {
-        QString uuid = QUuid::createUuid().toString(QUuid::WithoutBraces);
-        return uuid;
+    std::string generateUUID() {
+        return drogon::utils::getUuid();
     }
 
-    QString hashPassword(const QString& plainPassword) {
-        QByteArray data = plainPassword.toUtf8();
-        QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
-        return hash.toHex();
+    std::string hashPassword(const std::string& plainPassword) {
+        return drogon::utils::getSha256(plainPassword);
     }
 }

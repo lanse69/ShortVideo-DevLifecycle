@@ -12,8 +12,6 @@ target_link_libraries(api_service PRIVATE
     Drogon::Drogon
     lepai_common
     PostgreSQL::PostgreSQL
-    Qt6::Core
-    Qt6::Sql
 )
 
 add_custom_command(
