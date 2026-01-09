@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Dialogs
 
 Rectangle {
-    id: selectVideo
+    id: root
     color: "#000000"
 
     signal videoSelected(string filePath)
@@ -98,11 +98,6 @@ Rectangle {
         id: fileDialog
         title: "选择视频文件"
         nameFilters: ["视频文件 (*.mp4 *.mov *.avi)", "所有文件 (*)"]
-        onAccepted: {
-                var videoPath = currentFile.toString()
-                // 存储到全局变量或传递给下一个页面
-                selectVideo.videoSelected(videoPath)
-                console.log("已选择视频文件:", videoPath)
-            }
+        onAccepted: videoSelected(currentFile)
     }
 }
