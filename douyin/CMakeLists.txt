@@ -58,6 +58,8 @@ qt_add_qml_module(appdouyin
            android/res/values/libs.xml
            android/res/xml/qtprovider_paths.xml
            RESOURCES vam.qrc
+           QML_FILES BroseVideoViewModel.qml
+           QML_FILES VideoPlayWindow.qml
 )
 
 source_group("QML Files" FILES

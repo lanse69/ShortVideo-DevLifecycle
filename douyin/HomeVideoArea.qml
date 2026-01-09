@@ -8,38 +8,73 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
+    BroseVideoViewModel {
+        id: broseVideoViewModel
+
+        function getVideos()
+        {
+             return [
+                {
+                    title:"zhoujun",
+                    url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+                    description:"1111"
+                },
+                {
+                    title :"zhu",
+                    url :"file:///root/shiping/VID20251212075909.mp4",
+                    description:"2"
+                },
+                {
+                    title :"a",
+                    url :"file:///root/shiping/VID20251212075927.mp4",
+                    description:"3"
+                },
+            ]
+        }
+    }
+
     ListView {
         id: videoListView
         anchors.fill: parent
         orientation: ListView.Vertical
         snapMode: ListView.SnapOneItem
         highlightRangeMode: ListView.StrictlyEnforceRange
+        cacheBuffer: height * 2
         spacing: 2
 
         // 滑到底部提示
         property bool atBottomEnd: false
-
         onMovementEnded: {
             // 检查是否滑到底部
-            if (contentY >= contentHeight - height - 10) {
-                atBottomEnd = true
-                bottomTip.visible = true
-                hideTimer.restart()
+            if (contentY + height > contentHeight - 50) {
+                listModel.getVideos()
             }
         }
 
+
         // 视频数据模型
         model: ListModel {
-            ListElement { bgColor: "#1a1a1a"; username: "@用户1"; description: "视频描述1 #热门" }
-            ListElement { bgColor: "#2a1a1a"; username: "@用户2"; description: "视频描述2 #推荐" }
-            ListElement { bgColor: "#1a2a1a"; username: "@用户3"; description: "视频描述3 #搞笑" }
-            ListElement { bgColor: "#1a1a2a"; username: "@用户4"; description: "视频描述4 #美食" }
+            id:listModel
+            Component.onCompleted: {
+                getVideos()
+            }
+            function getVideos(){
+                var videos = broseVideoViewModel.getVideos()
+                for(let i = 0; i < videos.length; i++) {
+                    append({
+                               "title": videos[i].title,
+                               "source": videos[i].url,
+                               "description": videos[i].description
+                           })
+                }
+            }
         }
 
         delegate: Item {
             id: videoItem
             width: videoListView.width
             height: videoListView.height
+
 
             // 透明度控制
             property real avatarOpacity: 1.0
@@ -59,7 +94,21 @@ Rectangle {
             Rectangle {
                 id: videoBg
                 anchors.fill: parent
-                color: bgColor
+                //color: bgColor
+                VideoPlayWindow {
+                    id: currentPlayer
+                    width: videoListView.width
+                    height: videoListView.height
+                    playerSource:model.source
+                    property bool shouldPlay: index==videoListView.currentIndex && videoListView.visible
+                    onShouldPlayChanged: {
+                        if (shouldPlay) {
+                            mediaPlayer.play()
+                        } else {
+                           mediaPlayer.pause()
+                        }
+                    }
+                }
 
                 // 视频信息区域 - 右侧工具栏
                 ColumnLayout {
@@ -227,7 +276,7 @@ Rectangle {
                     // 用户名
                     Text {
                         id: usernameText
-                        text: username
+                        //text: username
                         color: "#FFFFFF"
                         font.pixelSize: 16
                         font.bold: true
