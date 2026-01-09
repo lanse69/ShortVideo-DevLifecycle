@@ -5,7 +5,8 @@
 namespace lepai {
 namespace repository {
 
-void UserRepository::findByUsername(const std::string& username, DbResultCallback callback) {
+void UserRepository::findByUsername(const std::string& username, DbResultCallback callback) 
+{
     auto db = drogon::app().getDbClient("slave"); // 读操作走从库
     if (!db) {
         LOG_ERROR << "CRITICAL: DB Client 'slave' not found!";
@@ -39,7 +40,8 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
     );
 }
 
-void UserRepository::createUser(const lepai::entity::User& user, CreateCallback callback) {
+void UserRepository::createUser(const lepai::entity::User& user, CreateCallback callback) 
+{
     auto db = drogon::app().getDbClient("default"); // 写操作走主库
 
     db->execSqlAsync(

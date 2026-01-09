@@ -11,7 +11,8 @@ namespace storage {
 MinioClient::MinioClient(const std::string& endpoint, const std::string& accessKey, const std::string& secretKey)
     : endpoint_(endpoint), accessKey_(accessKey), secretKey_(secretKey) {}
 
-std::string MinioClient::uploadFile(const std::string& bucket, const std::string& objectName, const std::string& localPath, const std::string& publicBaseUrl) {
+std::string MinioClient::uploadFile(const std::string& bucket, const std::string& objectName, const std::string& localPath, const std::string& publicBaseUrl) 
+{
     // 构建 MinIO 内部上传 API 地址
     std::string uploadUrl = "http://" + endpoint_ + "/" + bucket + "/" + objectName;
     

@@ -70,7 +70,7 @@ install_ubuntu() {
     sudo apt install -y libpqxx-dev libpq-dev postgresql-server-dev-all postgresql-client
     
     # 媒体处理 (FFmpeg + OpenCV)
-    sudo apt install -y libopencv-dev libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libswscale-dev
+    sudo apt install -y libopencv-dev libavcodec-dev libavformat-dev libavfilter-dev libavdevice-dev libswscale-dev ffmpeg
     
     # SSL
     sudo apt install -y libssl-dev

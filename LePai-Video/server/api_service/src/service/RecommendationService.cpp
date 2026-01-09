@@ -9,7 +9,8 @@ RecommendationService::RecommendationService() {
     videoRepo = std::make_shared<lepai::repository::VideoRepository>();
 }
 
-void RecommendationService::getDiscoveryFeed(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) {
+void RecommendationService::getDiscoveryFeed(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
+{
     // 策略：只有第一页(offset=0)走 Redis 缓存
     // 后续页走 DB
     if (offset > 0) {
@@ -50,10 +51,20 @@ void RecommendationService::getDiscoveryFeed(const std::string& userId, int limi
     );
 }
 
-void RecommendationService::fetchFromDb(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) {
-    videoRepo->getGlobalFeed(limit, offset, [this, userId, callback, offset](std::vector<lepai::entity::Video> videos, const std::string& err) {
+void RecommendationService::fetchFromDb(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
+{
+    videoRepo->getGlobalFeed(limit, offset, [this, userId, limit, offset, callback](std::vector<lepai::entity::Video> videos, const std::string& err) { 
         if (!err.empty()) {
             callback({}, err);
+            return;
+        }
+
+        // 如果当前页没数据，且不是第一页，说明滑到底了。
+        // 自动降级：重新从 offset = 0 开始查。
+        if (videos.empty() && offset > 0) {
+            LOG_INFO << "Feed reached end (offset " << offset << "), restarting from 0.";
+            // 递归调用自己，但强制 offset 为 0
+            fetchFromDb(userId, limit, 0, callback);
             return;
         }
 
@@ -77,7 +88,8 @@ void RecommendationService::fetchFromDb(const std::string& userId, int limit, in
     });
 }
 
-void RecommendationService::enrichUserData(const std::string& userId, std::vector<lepai::entity::Video> videos, lepai::repository::VideoRepository::FeedCallback callback) {
+void RecommendationService::enrichUserData(const std::string& userId, std::vector<lepai::entity::Video> videos, lepai::repository::VideoRepository::FeedCallback callback) 
+{
     // 如果是游客，直接返回，不需要查点赞状态
     if (userId.empty() || videos.empty()) {
         callback(videos, "");

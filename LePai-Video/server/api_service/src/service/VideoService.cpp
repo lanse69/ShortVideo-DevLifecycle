@@ -12,7 +12,8 @@ VideoService::VideoService() {
     videoRepo = std::make_shared<lepai::repository::VideoRepository>();
 }
 
-void VideoService::publishVideo(const std::string& userId, const std::string& title, const std::string& rawUrl, PublishCallback callback) {
+void VideoService::publishVideo(const std::string& userId, const std::string& title, const std::string& rawUrl, PublishCallback callback) 
+{
     // 构造实体
     lepai::entity::Video v;
     v.id = Utils::generateUUID();

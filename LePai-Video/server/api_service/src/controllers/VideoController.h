@@ -21,6 +21,5 @@ private:
     
     // 异步鉴权
     // 成功时调用 validCallback，失败时调用 invalidCallback (返回 401 或 500)
-    void validateUser(const drogon::HttpRequestPtr& req, std::function<void(const std::string& userId)> validCallback, std::function<void(const drogon::HttpResponsePtr& resp)> invalidCallback
-    );
+    void validateUser(const drogon::HttpRequestPtr& req, std::function<void(const std::string& userId)> validCallback, std::function<void(const drogon::HttpResponsePtr& resp)> invalidCallback);
 };

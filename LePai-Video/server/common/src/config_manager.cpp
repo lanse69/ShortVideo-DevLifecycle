@@ -9,7 +9,8 @@ ConfigManager& ConfigManager::instance() {
     return instance;
 }
 
-bool ConfigManager::loadConfig(const std::string& configPath) {
+bool ConfigManager::loadConfig(const std::string& configPath) 
+{
     std::ifstream configFile(configPath, std::ifstream::binary);
     if (!configFile.is_open()) {
         LOG_ERROR << "Failed to open config file: " << configPath;

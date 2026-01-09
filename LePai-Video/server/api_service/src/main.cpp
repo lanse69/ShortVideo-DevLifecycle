@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
         "lepai_db",
         "lepai_admin",
         "lepai_password",
-        5,
+        10,
         "default",
         "slave"
     );

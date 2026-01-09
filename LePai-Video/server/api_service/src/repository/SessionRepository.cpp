@@ -5,7 +5,8 @@
 namespace lepai {
 namespace repository {
 
-void SessionRepository::saveSession(const std::string& userId, const std::string& token, long timeoutSeconds, VoidCallback callback) {
+void SessionRepository::saveSession(const std::string& userId, const std::string& token, long timeoutSeconds, VoidCallback callback) 
+{
     auto redis = drogon::app().getRedisClient();
     
     // 存储当前有效的 token
@@ -51,7 +52,8 @@ void SessionRepository::saveSession(const std::string& userId, const std::string
     );
 }
 
-void SessionRepository::removeSession(const std::string& token, VoidCallback callback) {
+void SessionRepository::removeSession(const std::string& token, VoidCallback callback) 
+{
     auto redis = drogon::app().getRedisClient();
     std::string tokenKey = "session:token:" + token;
 

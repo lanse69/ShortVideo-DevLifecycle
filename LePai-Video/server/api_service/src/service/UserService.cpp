@@ -12,7 +12,8 @@ UserService::UserService() {
     sessionRepo = std::make_shared<lepai::repository::SessionRepository>();
 }
 
-void UserService::registerUser(const std::string& username, const std::string& password, RegisterCallback callback) {
+void UserService::registerUser(const std::string& username, const std::string& password, RegisterCallback callback) 
+{
     // 检查用户是否存在
     userRepo->findByUsername(username, [this, username, password, callback](const std::optional<lepai::entity::User>& userOpt, const std::string& error) {
         if (!error.empty()) {
@@ -42,7 +43,8 @@ void UserService::registerUser(const std::string& username, const std::string& p
     });
 }
 
-void UserService::login(const std::string& username, const std::string& password, LoginCallback callback) {
+void UserService::login(const std::string& username, const std::string& password, LoginCallback callback) 
+{
     // 查找用户
     userRepo->findByUsername(username, [this, password, callback](const std::optional<lepai::entity::User>& userOpt, const std::string& error) {
         if (!userOpt.has_value()) {

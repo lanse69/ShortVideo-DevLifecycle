@@ -5,8 +5,8 @@ VideoController::VideoController() {
 }
 
 // 异步鉴权
-void VideoController::validateUser(const drogon::HttpRequestPtr& req, std::function<void(const std::string& userId)> validCallback, std::function<void(const drogon::HttpResponsePtr& resp)> invalidCallback
-) {
+void VideoController::validateUser(const drogon::HttpRequestPtr& req, std::function<void(const std::string& userId)> validCallback, std::function<void(const drogon::HttpResponsePtr& resp)> invalidCallback) 
+{
     // 提取 Token
     std::string token = req->getHeader("Authorization");
     if (token.size() > 7 && token.substr(0, 7) == "Bearer ") {
@@ -59,7 +59,8 @@ void VideoController::validateUser(const drogon::HttpRequestPtr& req, std::funct
     );
 }
 
-void VideoController::publish(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback) {
+void VideoController::publish(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback) 
+{
     validateUser(req, 
         // Case 1: 鉴权成功
         [this, req, callback](const std::string& userId) {

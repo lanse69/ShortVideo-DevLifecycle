@@ -6,7 +6,8 @@
 namespace lepai {
 namespace repository {
 
-void VideoRepository::getGlobalFeed(int limit, int offset, FeedCallback callback) {
+void VideoRepository::getGlobalFeed(int limit, int offset, FeedCallback callback) 
+{
     // 走从库 "slave"
     auto db = drogon::app().getDbClient("slave");
     if (!db) {
@@ -60,7 +61,8 @@ void VideoRepository::getGlobalFeed(int limit, int offset, FeedCallback callback
     );
 }
 
-void VideoRepository::getLikedVideoIds(const std::string& userId, const std::vector<std::string>& videoIds, LikeStatusCallback callback) {
+void VideoRepository::getLikedVideoIds(const std::string& userId, const std::vector<std::string>& videoIds, LikeStatusCallback callback) 
+{
     if (videoIds.empty()) {
         callback({}, "");
         return;
@@ -102,7 +104,8 @@ void VideoRepository::getLikedVideoIds(const std::string& userId, const std::vec
     );
 }
 
-void VideoRepository::createVideo(const lepai::entity::Video& video, VoidCallback callback) {
+void VideoRepository::createVideo(const lepai::entity::Video& video, VoidCallback callback) 
+{
     auto db = drogon::app().getDbClient("default"); // 写主库
     
     db->execSqlAsync(

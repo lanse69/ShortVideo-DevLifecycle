@@ -4,7 +4,8 @@ namespace lepai {
 namespace worker {
 namespace messaging {
 
-void TaskQueue::popTask(TaskCallback callback) {
+void TaskQueue::popTask(TaskCallback callback) 
+{
     auto redis = drogon::app().getRedisClient();
     if (!redis) return;
 

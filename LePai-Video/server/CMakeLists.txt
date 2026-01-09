@@ -12,7 +12,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 find_package(Drogon REQUIRED)
 find_package(PostgreSQL REQUIRED)
 # find_package(OpenCV REQUIRED)
-# find_package(FFmpeg REQUIRED) # 需要配置 FindFFmpeg.cmake
 
 find_package(jsoncpp QUIET)
 if(NOT jsoncpp_FOUND)

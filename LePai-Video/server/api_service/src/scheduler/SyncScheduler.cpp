@@ -5,7 +5,8 @@
 namespace lepai {
 namespace scheduler {
 
-void SyncScheduler::syncLikesToDB() {
+void SyncScheduler::syncLikesToDB() 
+{
     auto redis = drogon::app().getRedisClient();
     auto db = drogon::app().getDbClient("default"); // 用主库写入
 
