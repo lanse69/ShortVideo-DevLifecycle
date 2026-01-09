@@ -17,6 +17,14 @@ else
 fi
 
 install_drogon_source() {
+    # 检测是否已安装 Drogon
+    if [ -f "/usr/local/include/drogon/version.h" ] || [ -f "/usr/include/drogon/version.h" ]; then
+        echo "------------------------------------------"
+        echo "检测到 Drogon 已安装，跳过编译步骤。"
+        echo "------------------------------------------"
+        return
+    fi
+
     echo "------------------------------------------"
     echo "开始编译安装 Drogon..."
     echo "------------------------------------------"
@@ -31,7 +39,7 @@ install_drogon_source() {
     echo "正在克隆 Drogon 仓库..."
     git clone https://github.com/drogonframework/drogon
     cd drogon
-    git checkout v1.9.7
+    git checkout v1.9.10
     git submodule update --init
 
     mkdir build
@@ -67,9 +75,9 @@ install_ubuntu() {
     # SSL
     sudo apt install -y libssl-dev
     
-    # Docker & Docker Compose
+    # 安装 Docker
     sudo apt install -y docker.io docker-compose
-    
+
     install_drogon_source
 
     echo "依赖安装完成！"
@@ -82,7 +90,7 @@ install_manjaro() {
     sudo pacman -Syu --noconfirm
     
     # 基础工具
-    sudo pacman -S --noconfirm base-devel cmake git gdb
+    sudo pacman -S --noconfirm base-devel cmake git gdb pkgconf
     
     # Qt6
     sudo pacman -S --noconfirm qt6-base qt6-declarative qt6-tools qt6-multimedia qt6-svg
@@ -99,6 +107,7 @@ install_manjaro() {
     # Docker & Docker Compose
     sudo pacman -S --noconfirm docker docker-compose
     
+    # 安装 JsonCpp 和其他依赖
     sudo pacman -S --noconfirm jsoncpp libutil-linux zlib
     
     install_drogon_source

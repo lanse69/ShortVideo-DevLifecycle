@@ -14,7 +14,7 @@ UserService::UserService() {
 
 void UserService::registerUser(const std::string& username, const std::string& password, RegisterCallback callback) {
     // 检查用户是否存在
-    userRepo->findByUsername(username, [this, username, password, callback](const std::optional<lepai::domain::User>& userOpt, const std::string& error) {
+    userRepo->findByUsername(username, [this, username, password, callback](const std::optional<lepai::entity::User>& userOpt, const std::string& error) {
         if (!error.empty()) {
             callback(false, "System error during check");
             return;
@@ -25,7 +25,7 @@ void UserService::registerUser(const std::string& username, const std::string& p
         }
 
         // 准备实体
-        lepai::domain::User newUser;
+        lepai::entity::User newUser;
         newUser.id = Utils::generateUUID();
         newUser.username = username;
         newUser.passwordHash = Utils::hashPassword(password);
@@ -44,7 +44,7 @@ void UserService::registerUser(const std::string& username, const std::string& p
 
 void UserService::login(const std::string& username, const std::string& password, LoginCallback callback) {
     // 查找用户
-    userRepo->findByUsername(username, [this, password, callback](const std::optional<lepai::domain::User>& userOpt, const std::string& error) {
+    userRepo->findByUsername(username, [this, password, callback](const std::optional<lepai::entity::User>& userOpt, const std::string& error) {
         if (!userOpt.has_value()) {
             callback({false, "User not found or system error", "", Json::Value()});
             return;

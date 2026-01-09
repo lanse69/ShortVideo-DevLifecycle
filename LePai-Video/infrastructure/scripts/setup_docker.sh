@@ -2,7 +2,7 @@
 set -e
 
 echo "=========================================="
-echo "   LePai-Video Docker 环境配置工具"
+echo "   LePai-Video Docker 启动工具"
 echo "=========================================="
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -88,36 +88,72 @@ else
     echo "警告：未找到 infrastructure/sql 目录，跳过脚本注入。"
 fi
 
-# [5/5] 启动基础设施
+# [5/5] 启动容器
 echo ""
-echo "[5/5] 准备启动项目基础设施 (Postgres, Redis, MinIO)..."
+echo "[5/5] 准备启动容器..."
 COMPOSE_FILE="$PROJECT_ROOT/infrastructure/docker-compose.yml"
 
-if [ -f "$COMPOSE_FILE" ]; then
-    echo "找到配置文件: $COMPOSE_FILE"
-    read -p "是否立即启动基础设施容器? [Y/n] " START_NOW
-    START_NOW=${START_NOW:-y}
-
-    if [[ "$START_NOW" =~ ^[Yy]$ ]]; then
-        echo "正在启动容器..."
-        if command -v docker-compose &> /dev/null; then
-             sudo docker-compose -f "$COMPOSE_FILE" up -d
-        else
-             sudo docker compose -f "$COMPOSE_FILE" up -d
-        fi
-        
-        echo ""
-        echo "基础设施已在后台运行！"
-        echo "你可以使用 'docker ps' 查看状态。"
-    else
-        echo "已跳过启动。"
-    fi
-else
-    echo "未找到 docker-compose.yml，请检查项目结构。"
+if [ ! -f "$COMPOSE_FILE" ]; then
+    echo "错误：未找到 $COMPOSE_FILE"
+    echo "请先运行 configure_env.sh 生成配置。"
+    exit 1
 fi
+
+DC_CMD=""
+if command -v docker-compose &> /dev/null; then
+    DC_CMD="docker-compose"
+elif docker compose version &> /dev/null; then
+    DC_CMD="docker compose"
+else
+    echo "错误：未找到 docker-compose 或 docker compose 指令"
+    exit 1
+fi
+
+echo "请选择当前机器的角色："
+echo "1) PC-1 (基础设施: DB, Redis, MinIO)"
+echo "2) PC-2 (应用网关: API Gateway)"
+echo "3) PC-3 (边缘节点: CDN Nginx)"
+echo "4) 全部启动"
+echo "5) 退出"
+
+read -p "请输入选项 [1-4]: " ROLE_OPT
+
+case $ROLE_OPT in
+    1)
+        echo "正在启动基础设施 (Profile: infra)..."
+        echo "请运行 setup_minio_buckets.sh 脚本来初始化 MinIO 桶!"
+        # --profile infra 只启动带有 profiles: ["infra"] 的服务
+        sudo $DC_CMD -f "$COMPOSE_FILE" --profile infra up -d
+        ;;
+    2)
+        echo "正在启动 API 网关 (Profile: gateway)..."
+        # --profile gateway 只启动带有 profiles: ["gateway"] 的服务
+        sudo $DC_CMD -f "$COMPOSE_FILE" --profile gateway up -d
+        ;;
+    3)
+        echo "正在启动边缘节点 (Profile: cdn)..."
+        # --profile cdn 只启动带有 profiles: ["cdn"] 的服务
+        sudo $DC_CMD -f "$COMPOSE_FILE" --profile cdn up -d
+        ;;
+    4)
+        echo "正在启动所有服务..."
+        echo "请运行 setup_minio_buckets.sh 脚本来初始化 MinIO 桶!"
+        # --profile all
+        sudo $DC_CMD -f "$COMPOSE_FILE" --profile infra --profile gateway --profile cdn up -d
+        ;;
+    5)
+        echo "已退出。"
+        exit 0
+        ;;
+    *)
+        echo "无效选项。"
+        exit 1
+        ;;
+esac
 
 echo ""
 echo "=========================================="
-echo "配置完成！"
+echo "容器启动命令已执行！"
+echo "使用 'docker ps' 查看运行状态。"
 echo "重要提示：如果你是第一次运行此脚本，请记得注销并重新登录系统"
 echo "=========================================="

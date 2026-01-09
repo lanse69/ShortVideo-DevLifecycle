@@ -3,7 +3,7 @@
 #include <drogon/HttpController.h>
 #include <memory>
 
-#include "../application/service/UserService.h"
+#include "../service/UserService.h"
 
 class UserController : public drogon::HttpController<UserController>
 {

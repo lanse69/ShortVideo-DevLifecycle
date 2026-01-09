@@ -5,8 +5,8 @@
 #include <json/json.h>
 #include <memory>
 
-#include "../../infrastructure/repository/UserRepository.h"
-#include "../../infrastructure/repository/SessionRepository.h"
+#include "../repository/UserRepository.h"
+#include "../repository/SessionRepository.h"
 
 namespace lepai {
 namespace service {

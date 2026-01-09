@@ -4,6 +4,10 @@
     "db_slave_host": "{{PC1_IP}}",
     "db_slave_port": 5433,
     "redis_host": "{{PC1_IP}}",
+    "redis_port": 6379,
     "minio_host": "{{PC1_IP}}",
+    "minio_port": 9000,
+    "cdn_host": "{{PC3_IP}}", 
+    "cdn_port": 8001,
     "server_role": "api_service"
 }

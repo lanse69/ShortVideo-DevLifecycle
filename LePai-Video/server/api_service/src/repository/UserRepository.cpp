@@ -20,7 +20,7 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
                 callback(std::nullopt, "");
                 return;
             }
-            lepai::domain::User user;
+            lepai::entity::User user;
             try {
                 user.id = r[0]["id"].as<std::string>();
                 user.username = r[0]["username"].as<std::string>();
@@ -39,7 +39,7 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
     );
 }
 
-void UserRepository::createUser(const lepai::domain::User& user, CreateCallback callback) {
+void UserRepository::createUser(const lepai::entity::User& user, CreateCallback callback) {
     auto db = drogon::app().getDbClient("default"); // 写操作走主库
 
     db->execSqlAsync(

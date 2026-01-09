@@ -50,3 +50,15 @@ std::string ConfigManager::getRedisHost() const {
 std::string ConfigManager::getMinioHost() const { 
     return m_config.get("minio_host", "127.0.0.1").asString();
 }
+
+int ConfigManager::getMinioPort() const {
+    return m_config.get("minio_port", 9000).asInt();
+}
+
+std::string ConfigManager::getCdnHost() const {
+    return m_config.get("cdn_host", "127.0.0.1").asString();
+}
+
+int ConfigManager::getCdnPort() const {
+    return m_config.get("cdn_port", 80).asInt();
+}

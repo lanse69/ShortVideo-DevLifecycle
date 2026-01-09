@@ -1,0 +1,74 @@
+worker_processes auto;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+    
+    # 开启高效传输
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    keepalive_timeout  65;
+
+    # 定义缓存路径
+    # /var/cache/nginx: 容器内缓存路径
+    # levels=1:2: 目录层级
+    # keys_zone=my_cache:10m: 内存中存储 key 的区域大小
+    # max_size=10g: 硬盘最大缓存空间
+    # inactive=60m: 60分钟没人访问就删除
+    proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=my_cache:10m max_size=10g inactive=60m use_temp_path=off;
+
+    # 定义日志格式
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for" '
+                      '[Cache: $upstream_cache_status]';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        # 代理 MinIO 的 /public 桶
+        location /public/ {
+            # MinIO 所在的 IP
+            proxy_pass http://{{PC1_IP}}:9000/public/;
+            
+            # 使用 HTTP/1.1 长连接回源，减少 TCP 握手开销
+            proxy_http_version 1.1;
+            proxy_set_header Connection "";
+
+            # 启用缓存
+            proxy_cache my_cache;
+
+            # 缓存 Key 只包含 URI (文件名)
+            proxy_cache_key $uri;
+            
+            # 清除请求头中的 Range，强制向 MinIO 请求完整文件
+            proxy_set_header Range "";
+            
+            # 开启 Nginx 自身的 Range 支持
+            proxy_force_ranges on;
+            
+            # 缓存有效时间：200状态码缓存24小时
+            proxy_cache_valid 200 24h;
+            proxy_cache_valid 404 1m;
+            
+            # 添加响应头
+            add_header X-Cache-Status $upstream_cache_status;
+            
+            # 忽略 MinIO 可能返回的干扰头
+            proxy_ignore_headers Set-Cookie;
+            proxy_hide_header Set-Cookie;
+            
+            # 只有当文件完全下载到缓存后，才允许被作为一个完整文件提供服务
+            proxy_cache_lock on;
+            proxy_cache_lock_timeout 10s;
+        }
+    }
+}

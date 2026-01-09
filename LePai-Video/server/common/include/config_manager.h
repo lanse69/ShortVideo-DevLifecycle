@@ -17,7 +17,12 @@ public:
     int getDbSlavePort() const;
 
     std::string getRedisHost() const;
+    
     std::string getMinioHost() const;
+    int getMinioPort() const;
+
+    std::string getCdnHost() const;
+    int getCdnPort() const;
 
 private:
     ConfigManager() = default;

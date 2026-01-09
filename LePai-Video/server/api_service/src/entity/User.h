@@ -4,7 +4,7 @@
 #include <json/json.h>
 
 namespace lepai {
-namespace domain {
+namespace entity {
 
 struct User {
     std::string id;
@@ -22,5 +22,5 @@ struct User {
     }
 };
 
-} // namespace domain
+} // namespace entity
 } // namespace lepai
