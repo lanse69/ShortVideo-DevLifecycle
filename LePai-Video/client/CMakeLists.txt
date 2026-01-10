@@ -49,6 +49,11 @@ qt_add_qml_module(appLePaiClient
         QML_FILES src/view/LoginPage.qml
         QML_FILES src/view/Player.qml
         QML_FILES src/view/RegisterPage.qml
+        SOURCES src/model/fileutils.h src/model/fileutils.cpp
+        SOURCES src/model/videoaudiomerger.h src/model/videoaudiomerger.cpp
+        QML_FILES src/view/AudioWaveform.qml
+        QML_FILES src/view/MergeControlPanel.qml
+        QML_FILES src/view/VideoWaveform.qml
 )
 
 target_include_directories(appLePaiClient PRIVATE

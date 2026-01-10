@@ -1,7 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QCoreApplication>
-
+#include "videoaudiomerger.h"
+#include "fileutils.h"
 #include "ConfigManager.h"
 
 int main(int argc, char *argv[])
@@ -13,6 +14,13 @@ int main(int argc, char *argv[])
     ConfigManager::instance().loadConfig(configPath);
 
     QQmlApplicationEngine engine;
+
+    // 或者创建全局实例
+    VideoAudioMerger *vaMerger = new VideoAudioMerger();
+    engine.rootContext()->setContextProperty("videoaudiomerger",vaMerger);
+
+    FileUtils *fU = new FileUtils();
+    engine.rootContext()->setContextProperty("fileutils",fU);
 
     QObject::connect(
         &engine,
