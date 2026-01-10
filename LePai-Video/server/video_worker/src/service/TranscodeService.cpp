@@ -30,7 +30,7 @@ TranscodeService::TranscodeService() {
     auto& cfg = ConfigManager::instance();
     std::string minioEndpoint = cfg.getMinioHost() + ":" + std::to_string(cfg.getMinioPort());
     
-    storage = std::make_unique<storage::MinioClient>(
+    storage = std::make_unique<lepai::storage::MinioClient>(
         minioEndpoint,
         "lepai_minio", 
         "lepai_minio_pass"
@@ -87,18 +87,24 @@ void TranscodeService::processTask(const std::string& videoId)
     auto& cfg = ConfigManager::instance();
     std::string cdnBaseUrl = "http://" + cfg.getCdnHost() + ":" + std::to_string(cfg.getCdnPort());
     std::string finalCoverUrl;
-    std::string finalVideoUrl;
-    int duration = 0;
+    std::string defaultCoverUrl = cdnBaseUrl + "/public/defaults/failed.jpeg";
 
     // 获取元数据 & 生成封面
-    duration = media::FFmpegHelper::getVideoDuration(rawVideoUrl);
+    int duration = media::FFmpegHelper::getVideoDuration(rawVideoUrl);
     if (media::FFmpegHelper::generateThumbnail(rawVideoUrl, coverPath.string())) {
         // 上传封面: public/covers/<videoId>.jpg
         std::string objectName = "covers/" + videoId + ".jpg";
         finalCoverUrl = storage->uploadFile("public", objectName, coverPath.string(), cdnBaseUrl);
+        
+        // 如果上传失败，回退到默认
+        if (finalCoverUrl.empty()) {
+             LOG_WARN << "Cover upload failed for " << videoId << ", using default.";
+             finalCoverUrl = defaultCoverUrl;
+        }
     } else {
-        // TODO: 生成/使用默认封面
-        LOG_WARN << "Failed to generate thumbnail for video: " << videoId;
+        // 截图失败：使用默认封面
+        LOG_WARN << "Thumbnail generation failed for " << videoId << ", using default.";
+        finalCoverUrl = defaultCoverUrl;
     }
 
     // 视频切片转码 (HLS)
@@ -187,7 +193,7 @@ void TranscodeService::processTask(const std::string& videoId)
     // 状态更新
     if (!uploadError) {
         // 构造最终播放地址
-        finalVideoUrl = cdnBaseUrl + "/" + "public" + "/" + m3u8ObjectName;
+        std::string finalVideoUrl = cdnBaseUrl + "/" + "public" + "/" + m3u8ObjectName;
         
         LOG_INFO << "Success! Video URL: " << finalVideoUrl;
         repository->markAsPublished(videoId, finalCoverUrl, duration, finalVideoUrl);

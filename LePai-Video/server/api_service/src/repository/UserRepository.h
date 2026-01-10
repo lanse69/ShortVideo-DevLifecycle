@@ -19,6 +19,9 @@ public:
 
     // 创建新用户
     void createUser(const lepai::entity::User& user, CreateCallback callback);
+
+    // 更新用户头像
+    void updateAvatar(const std::string& userId, const std::string& url, std::function<void(bool)> callback);
 };
 
 }

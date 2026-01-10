@@ -2,6 +2,7 @@
 add_library(lepai_common STATIC
     src/utils.cpp
     src/config_manager.cpp
+    src/MinioClient.cpp 
 )
 
 # 链接依赖
