@@ -14,6 +14,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 
+
 Rectangle {
     id: _profileRectangle
     Layout.fillWidth: true
@@ -21,13 +22,16 @@ Rectangle {
     color: "#000000"
 
     property int currentProfileTab: 0
-    property bool showLoginPage: true  // 控制登录页面显示
+    property bool showLoginPage:true// 控制登录页面显示
+    property bool waslogin:authManager.wasLogin
+
+
     // 新增：登录页面（半透明覆盖层）
      Rectangle {
          id: loginOverlay
          anchors.fill: parent
          color: "#80000000"  // 半透明黑色背景
-         visible: showLoginPage
+         visible: showLoginPage&&!waslogin
          z: 100  // 确保在最上层
 
          // 登录页面内容 - 调整为更合适的手机比例
@@ -40,16 +44,9 @@ Rectangle {
 
              // 使LoginPage背景为白色
              color: "white"
-
-             onLoginSuccess: {
-                 console.log("登录成功")
-                 showLoginPage = false
-             }
-
-             onCloseRequested: {
-                 console.log("关闭登录页面")
-                 showLoginPage = false
-             }
+            onCloseRequested:{
+                showLoginPage=false
+            }
           }
      }
 
@@ -74,20 +71,37 @@ Rectangle {
                     }
             }
             // 头像
+            // Rectangle {
+            //     Layout.preferredWidth: 120
+            //     Layout.preferredHeight: 120
+            //     radius: 60
+            //     color: "#FF0050"
+            //     border.color: "#FFFFFF"
+            //     border.width: 2
+            //     Layout.alignment: Qt.AlignHCenter
+            // }
+            // 方式1：使用Image元素
             Rectangle {
                 Layout.preferredWidth: 120
                 Layout.preferredHeight: 120
                 radius: 60
-                color: "#FF0050"
                 border.color: "#FFFFFF"
                 border.width: 2
                 Layout.alignment: Qt.AlignHCenter
+                clip: true  // 关键：裁剪超出圆形的部分
+
+                Image {
+                    anchors.fill: parent
+                    anchors.margins: 2  // 避免图片覆盖边框
+                    source: authManager.currentUser.avatarUrl  // qrc路径
+                    fillMode: Image.PreserveAspectCrop
+                }
             }
 
             // 用户信息
             // 用户名
             Text {
-                text: "抖音用户"
+                text: authManager.currentUser.username
                 color: "#FFFFFF"
                 font.pixelSize: 20
                 font.bold: true
@@ -95,41 +109,41 @@ Rectangle {
             }
 
             // 抖音号
-            Text {
-                text: "抖音号: douyin123456"
-                color: "#AAAAAA"
-                font.pixelSize: 15
-                Layout.alignment: Qt.AlignHCenter
-            }
+            // Text {
+            //     text: "抖音号: douyin123456"
+            //     color: "#AAAAAA"
+            //     font.pixelSize: 15
+            //     Layout.alignment: Qt.AlignHCenter
+            // }
 
             // 获赞、关注、粉丝
             RowLayout {
                 spacing: 15
                 Layout.alignment: Qt.AlignHCenter
 
-                // 获赞
-                ColumnLayout {
-                    spacing: 2
-                    Text {
-                        text: "1.2w"
-                        color: "#FFFFFF"
-                        font.pixelSize: 20
-                        font.bold: true
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                    Text {
-                        text: "获赞"
-                        color: "#AAAAAA"
-                        font.pixelSize: 15
-                        Layout.alignment: Qt.AlignHCenter
-                    }
-                }
+                // // 获赞
+                // ColumnLayout {
+                //     spacing: 2
+                //     Text {
+                //         text: "1.2w"
+                //         color: "#FFFFFF"
+                //         font.pixelSize: 20
+                //         font.bold: true
+                //         Layout.alignment: Qt.AlignHCenter
+                //     }
+                //     Text {
+                //         text: "获赞"
+                //         color: "#AAAAAA"
+                //         font.pixelSize: 15
+                //         Layout.alignment: Qt.AlignHCenter
+                //     }
+                // }
 
                 // 关注
                 ColumnLayout {
                     spacing: 2
                     Text {
-                        text: "128"
+                        text: authManager.currentUser.followingCount
                         color: "#FFFFFF"
                         font.pixelSize: 20
                         font.bold: true
@@ -147,7 +161,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 2
                     Text {
-                        text: "2.5k"
+                        text: authManager.currentUser.followingCount
                         color: "#FFFFFF"
                         font.pixelSize: 20
                         font.bold: true

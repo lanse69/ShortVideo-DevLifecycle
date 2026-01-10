@@ -27,6 +27,9 @@ qt_add_qml_module(appLePaiClient
         src/model/videomodel.h
         src/model/videomodel.cpp
 
+        src/model/usermodel.h
+        src/model/usermodel.cpp
+
     QML_FILES
         src/view/Main.qml
         src/view/Content.qml

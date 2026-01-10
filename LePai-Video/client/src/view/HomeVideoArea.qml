@@ -1,6 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
-
+import LePaiClient
 // 视频内容区域
 Rectangle {
     Layout.fillWidth: true
@@ -8,30 +8,58 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
-    Item {
-        id: broseVideoViewModel
+    // Item {
+    //     id: broseVideoViewModel
 
-        function getVideos()
-        {
-             return [
-                {
-                    title:"zhoujun",
-                    url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-                    description:"1111"
-                },
-                {
-                    title :"zhu",
-                    url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-                    description:"2"
-                },
-                {
-                    title :"a",
-                    url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-                    description:"3"
-                },
-            ]
+    //     function getVideos()
+    //     {
+    //          return [
+    //             {
+    //                 title:"zhoujun",
+    //                 url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+    //                 description:"1111"
+    //             },
+    //             {
+    //                 title :"zhu",
+    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+    //                 description:"2"
+    //             },
+    //             {
+    //                 title :"a",
+    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+    //                 description:"3"
+    //             },
+    //         ]
+    //     }
+    // }
+
+
+    BrowseVideosModelView {
+        id: browseVideosModelView
+        onVideosLoaded: {
+            console.log("收到视频数据，数量:", videoList.length);
+            // 将新视频添加到ListModel
+            for (var i = 0; i < videoList.length; i++) {
+                var video = videoList[i];
+                videoListModel.append({
+                    "videoId": video.id,            // 使用 id 字段
+                    //"userId": video.userId,         // 可能为空
+                    "title": video.title,
+                    "url": video.url,
+                    "likeCount": video.likeCount,
+                    "coverUrl": video.coverUrl,     // 使用 coverUrl 字段
+                    "description": video.title,     // 描述可以用标题替代，因为没有description字段
+                    //"createdAt": video.createdAt,   // 可能为空
+                    "authorName": video.authorName, // 作者名
+                    "authorAvatar": video.authorAvatar // 作者头像
+                });
+            }
+        }
+        onVideosRequestFailed:{
+            console.log("加载视频失败:", errorMessage);
         }
     }
+
 
     ListView {
         id: videoListView
@@ -45,30 +73,39 @@ Rectangle {
         // 滑到底部提示
         property bool atBottomEnd: false
         onMovementEnded: {
-            // 检查是否滑到底部
+            // // 检查是否滑到底部
+            // if (contentY + height > contentHeight - 50) {
+            //     listModel.getVideos()
+            // }
             if (contentY + height > contentHeight - 50) {
-                listModel.getVideos()
+                browseVideosModelView.requestVideos();
             }
         }
-
 
         // 视频数据模型
-        model: ListModel {
+        model:ListModel {
             id:listModel
             Component.onCompleted: {
-                getVideos()
-            }
-            function getVideos(){
-                var videos = broseVideoViewModel.getVideos()
-                for(let i = 0; i < videos.length; i++) {
-                    append({
-                               "title": videos[i].title,
-                               "source": videos[i].url,
-                               "description": videos[i].description
-                           })
-                }
+                browseVideosModelView.requestVideos();
             }
         }
+
+        //     ListModel {
+        //     id:listModel
+        //     Component.onCompleted: {
+        //         getVideos()
+        //     }
+        //     function getVideos(){
+        //         var videos = broseVideoViewModel.getVideos()
+        //         for(let i = 0; i < videos.length; i++) {
+        //             append({
+        //                        "title": videos[i].title,
+        //                        "source": videos[i].url,
+        //                        "description": videos[i].description
+        //                    })
+        //         }
+        //     }
+        // }
 
         delegate: Item {
             id: videoItem

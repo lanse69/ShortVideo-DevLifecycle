@@ -8,8 +8,8 @@ Rectangle {
     radius: 20
 
     property bool showRegisterPage: false
-    // 添加这两个信号
-    signal loginSuccess()
+    //property alias _errorText:errorText
+
     signal closeRequested()
     // 右上角关闭按钮
    Button {
@@ -41,6 +41,7 @@ Rectangle {
    }
    //注册界面
    RegisterPage{
+       id:registerPage
       anchors.fill: parent
       visible: showRegisterPage
       z:parent.z+1
@@ -206,9 +207,9 @@ Rectangle {
                         }
 
                         onClicked: {
-                          console.log("点击登录按钮")
-                            // 触发登录成功信号
-                            loginSuccess()
+                            console.log("点击登录按钮")
+                            // 触发登录
+                            authManager.login(usernameInput.text,passwordInput.text)
                         }
                     }
                     // 注册按钮
@@ -245,15 +246,16 @@ Rectangle {
                 }
 
 
-              // 错误提示
-              Text {
-                  id: errorText
-                  Layout.alignment: Qt.AlignHCenter
-                  color: "#e74c3c"
-                  visible: false
-                  font.pixelSize: 14
-                  font.bold: true
-              }
+                // 错误提示
+                Text {
+                    id: errorText
+                    Layout.alignment: Qt.AlignHCenter
+                    color: "#e74c3c"
+                    visible: true
+                    font.pixelSize: 14
+                    font.bold: true
+                    text:authManager.loginMassage
+                }
 
               // 底部提示 - 修改为实际提示
               Text {
@@ -267,20 +269,20 @@ Rectangle {
         }
 
         // 输入框获取焦点时清空错误提示
-        Connections {
-            target: usernameInput
-            function onTextChanged() {
-                errorText.visible = false
-                loginButton.enabled = true
-            }
-        }
+        // Connections {
+        //     target: usernameInput
+        //     function onTextChanged() {
+        //         errorText.visible = false
+        //         loginButton.enabled = true
+        //     }
+        // }
 
-        Connections {
-            target: passwordInput
-            function onTextChanged() {
-                errorText.visible = false
-                loginButton.enabled = true
-            }
-        }
+        // Connections {
+        //     target: passwordInput
+        //     function onTextChanged() {
+        //         errorText.visible = false
+        //         loginButton.enabled = true
+        //     }
+        // }
     }
 }
