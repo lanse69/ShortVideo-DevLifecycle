@@ -58,7 +58,7 @@ void RecommendationService::getDiscoveryFeed(const std::string& userId, int limi
 
 void RecommendationService::fetchFromDb(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
 {
-    videoRepo->getGlobalFeed(limit, offset, [this, userId, limit, offset, callback](std::vector<lepai::entity::Video> videos, const std::string& err) { 
+    videoRepo->getGlobalFeed((long long)limit, (long long)offset, [this, userId, limit, offset, callback](std::vector<lepai::entity::Video> videos, const std::string& err) { 
         if (!err.empty()) {
             callback({}, err);
             return;
@@ -169,6 +169,46 @@ void RecommendationService::enrichUserData(const std::string& userId, std::vecto
     userRepo->getFollowingIds(userId, authorIds, [ctx, tryFinalize](const std::vector<std::string>& ids) {
         ctx->followingUserIds = ids;
         tryFinalize();
+    });
+}
+
+void RecommendationService::getFollowingFeed(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
+{
+    videoRepo->getFollowingFeed(userId, (long long)limit, (long long)offset, [this, userId, callback](std::vector<lepai::entity::Video> videos, const std::string& err) {
+        if (!err.empty()) {
+            callback({}, err);
+            return;
+        }
+        
+        enrichUserData(userId, videos, callback);
+    });
+}
+
+// 点赞列表
+void RecommendationService::getLikedFeed(const std::string& targetUserId, const std::string& currentUserId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
+{
+    videoRepo->getLikedFeed(targetUserId, (long long)limit, (long long)offset, [this, currentUserId, callback](std::vector<lepai::entity::Video> videos, const std::string& err) {
+        if (!err.empty()) {
+            callback({}, err);
+            return;
+        }
+
+        // 填充个性化状态
+        enrichUserData(currentUserId, videos, callback);
+    });
+}
+
+// 用户作品列表业务
+void RecommendationService::getUserUploadFeed(const std::string& targetUserId, const std::string& currentUserId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
+{
+    videoRepo->getUserUploadFeed(targetUserId, (long long)limit, (long long)offset, [this, currentUserId, callback](std::vector<lepai::entity::Video> videos, const std::string& err) {
+        if (!err.empty()) {
+            callback({}, err);
+            return;
+        }
+
+        // 填充个性化状态
+        enrichUserData(currentUserId, videos, callback);
     });
 }
 

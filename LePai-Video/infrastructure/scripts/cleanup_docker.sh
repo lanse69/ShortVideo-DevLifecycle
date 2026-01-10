@@ -42,7 +42,7 @@ cd "$INFRA_DIR" || exit
 sudo $DC_CMD down -v --remove-orphans
 
 echo ""
-echo -e "${YELLOW}[2/4] 强制清理残留容器 (以防万一)...${NC}"
+echo -e "${YELLOW}[2/4] 强制清理残留容器...${NC}"
 # 显式删除指定名称的容器，防止 docker-compose 没删干净
 sudo docker rm -f lepai_pg lepai_pg_slave lepai_redis lepai_minio lepai_gateway lepai_cdn 2>/dev/null || true
 

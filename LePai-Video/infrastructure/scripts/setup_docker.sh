@@ -116,7 +116,7 @@ echo "3) PC-3 (边缘节点: CDN Nginx)"
 echo "4) 全部启动"
 echo "5) 退出"
 
-read -p "请输入选项 [1-4]: " ROLE_OPT
+read -p "请输入选项 [1-5]: " ROLE_OPT
 
 case $ROLE_OPT in
     1)

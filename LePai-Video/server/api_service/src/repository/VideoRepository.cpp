@@ -6,7 +6,7 @@
 namespace lepai {
 namespace repository {
 
-void VideoRepository::getGlobalFeed(int limit, int offset, FeedCallback callback) 
+void VideoRepository::getGlobalFeed(long long limit, long long offset, FeedCallback callback) 
 {
     // 走从库 "slave"
     auto db = drogon::app().getDbClient("slave");
@@ -186,6 +186,173 @@ void VideoRepository::getVideoLikeCount(const std::string& videoId, std::functio
             callback(0);
         },
         videoId
+    );
+}
+
+// 关注视频流
+void VideoRepository::getFollowingFeed(const std::string& userId, long long limit, long long offset, FeedCallback callback) 
+{
+    auto db = drogon::app().getDbClient("slave");
+    if (!db) {
+        callback({}, "DB slave unavailable");
+        return;
+    }
+    
+    // 联表查询：视频表 + 关注表 + 用户表
+    std::string sql = R"(
+        SELECT 
+            v.id, v.user_id, v.title, v.url, v.cover_url, v.duration, v.like_count, v.created_at,
+            u.username, u.avatar_url
+        FROM videos v
+        JOIN user_follows f ON v.user_id = f.following_id
+        LEFT JOIN users u ON v.user_id = u.id
+        WHERE f.follower_id = $1 AND v.status = 1
+        ORDER BY v.created_at DESC
+        LIMIT $2 OFFSET $3
+    )";
+
+    db->execSqlAsync(
+        sql,
+        [callback](const drogon::orm::Result& r) {
+            std::vector<lepai::entity::Video> videos;
+            videos.reserve(r.size());
+
+            for (const auto& row : r) {
+                lepai::entity::Video v;
+                try {
+                    v.id = row["id"].as<std::string>();
+                    v.userId = row["user_id"].as<std::string>();
+                    v.title = row["title"].as<std::string>();
+                    v.url = row["url"].as<std::string>();
+                    v.coverUrl = row["cover_url"].isNull() ? "" : row["cover_url"].as<std::string>();
+                    v.duration = row["duration"].as<int>();
+                    v.likeCount = row["like_count"].as<long long>();
+                    v.createdAt = row["created_at"].as<std::string>();
+                    v.authorName = row["username"].isNull() ? "Unknown" : row["username"].as<std::string>();
+                    v.authorAvatar = row["avatar_url"].isNull() ? "" : row["avatar_url"].as<std::string>();
+                    videos.emplace_back(std::move(v));
+                } catch (const std::exception& e) {
+                    LOG_ERROR << "Error parsing video row: " << e.what();
+                }
+            }
+            callback(videos, "");
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "Following Feed Query Error: " << e.base().what();
+            callback({}, "Internal DB Error");
+        },
+        userId, limit, offset
+    );
+}
+
+// 点赞流查询
+void VideoRepository::getLikedFeed(const std::string& targetUserId, long long limit, long long offset, FeedCallback callback) 
+{
+    auto db = drogon::app().getDbClient("slave");
+    if (!db) {
+        callback({}, "DB slave unavailable");
+        return;
+    }
+
+    // 联表查询：视频表 + 点赞表 + 用户表
+    std::string sql = R"(
+        SELECT 
+            v.id, v.user_id, v.title, v.url, v.cover_url, v.duration, v.like_count, v.created_at,
+            u.username, u.avatar_url
+        FROM video_likes vl
+        JOIN videos v ON vl.video_id = v.id
+        LEFT JOIN users u ON v.user_id = u.id
+        WHERE vl.user_id = $1 AND v.status = 1
+        ORDER BY vl.created_at DESC
+        LIMIT $2 OFFSET $3
+    )";
+
+    db->execSqlAsync(
+        sql,
+        [callback](const drogon::orm::Result& r) {
+            std::vector<lepai::entity::Video> videos;
+            videos.reserve(r.size());
+
+            for (const auto& row : r) {
+                lepai::entity::Video v;
+                try {
+                    v.id = row["id"].as<std::string>();
+                    v.userId = row["user_id"].as<std::string>();
+                    v.title = row["title"].as<std::string>();
+                    v.url = row["url"].as<std::string>();
+                    v.coverUrl = row["cover_url"].isNull() ? "" : row["cover_url"].as<std::string>();
+                    v.duration = row["duration"].as<int>();
+                    v.likeCount = row["like_count"].as<long long>();
+                    v.createdAt = row["created_at"].as<std::string>();
+                    v.authorName = row["username"].isNull() ? "Unknown" : row["username"].as<std::string>();
+                    v.authorAvatar = row["avatar_url"].isNull() ? "" : row["avatar_url"].as<std::string>();
+                    videos.emplace_back(std::move(v));
+                } catch (const std::exception& e) {
+                    LOG_ERROR << "Error parsing liked video row: " << e.what();
+                }
+            }
+            callback(videos, "");
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "Liked Feed Query Error: " << e.base().what();
+            callback({}, "Internal DB Error");
+        },
+        targetUserId, limit, offset
+    );
+}
+
+// 用户发布列表查询
+void VideoRepository::getUserUploadFeed(const std::string& targetUserId, long long limit, long long offset, FeedCallback callback) 
+{
+    auto db = drogon::app().getDbClient("slave");
+    if (!db) {
+        callback({}, "DB slave unavailable");
+        return;
+    }
+
+    // 联表查询：视频表 + 用户表
+    std::string sql = R"(
+        SELECT 
+            v.id, v.user_id, v.title, v.url, v.cover_url, v.duration, v.like_count, v.created_at,
+            u.username, u.avatar_url
+        FROM videos v
+        LEFT JOIN users u ON v.user_id = u.id
+        WHERE v.user_id = $1 AND v.status = 1
+        ORDER BY v.created_at DESC
+        LIMIT $2 OFFSET $3
+    )";
+
+    db->execSqlAsync(
+        sql,
+        [callback](const drogon::orm::Result& r) {
+            std::vector<lepai::entity::Video> videos;
+            videos.reserve(r.size());
+
+            for (const auto& row : r) {
+                lepai::entity::Video v;
+                try {
+                    v.id = row["id"].as<std::string>();
+                    v.userId = row["user_id"].as<std::string>();
+                    v.title = row["title"].as<std::string>();
+                    v.url = row["url"].as<std::string>();
+                    v.coverUrl = row["cover_url"].isNull() ? "" : row["cover_url"].as<std::string>();
+                    v.duration = row["duration"].as<int>();
+                    v.likeCount = row["like_count"].as<long long>();
+                    v.createdAt = row["created_at"].as<std::string>();
+                    v.authorName = row["username"].isNull() ? "Unknown" : row["username"].as<std::string>();
+                    v.authorAvatar = row["avatar_url"].isNull() ? "" : row["avatar_url"].as<std::string>();
+                    videos.emplace_back(std::move(v));
+                } catch (const std::exception& e) {
+                    LOG_ERROR << "Error parsing user upload video row: " << e.what();
+                }
+            }
+            callback(videos, "");
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "User Upload Feed Query Error: " << e.base().what();
+            callback({}, "Internal DB Error");
+        },
+        targetUserId, limit, offset
     );
 }
 

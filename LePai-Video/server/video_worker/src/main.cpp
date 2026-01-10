@@ -17,6 +17,8 @@ int main(int argc, char *argv[]) {
 
     auto& cfg = ConfigManager::instance();
 
+    drogon::app().setLogLocalTime(true); 
+
     // 数据库 (Default Write)
     drogon::app().createDbClient("postgresql", 
         cfg.getDbMasterHost(),

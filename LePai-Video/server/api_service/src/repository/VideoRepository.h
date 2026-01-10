@@ -18,7 +18,7 @@ public:
 
 
     // 获取全站最新/热门视频 (读从库)
-    void getGlobalFeed(int limit, int offset, FeedCallback callback);
+    void getGlobalFeed(long long limit, long long offset, FeedCallback callback);
 
     // 批量检查某用户是否点赞了这批视频 (读从库)
     void getLikedVideoIds(const std::string& userId, const std::vector<std::string>& videoIds, LikeStatusCallback callback);
@@ -34,6 +34,15 @@ public:
     
     // 获取视频当前的基准点赞数 (用于缓存未命中时初始化 Redis)
     void getVideoLikeCount(const std::string& videoId, std::function<void(long long)> callback);
+
+    // 获取关注视频流
+    void getFollowingFeed(const std::string& userId, long long limit, long long offset, FeedCallback callback);
+
+    // 点赞视频流 (查看 targetUserId 点赞过的视频)
+    void getLikedFeed(const std::string& targetUserId, long long limit, long long offset, FeedCallback callback);
+
+    // 用户发布列表 (作品页)
+    void getUserUploadFeed(const std::string& targetUserId, long long limit, long long offset, FeedCallback callback);
 };
 
 }

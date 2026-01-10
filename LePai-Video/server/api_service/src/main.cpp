@@ -16,6 +16,9 @@ int main(int argc, char *argv[]) {
     }
 
     auto& cfg = ConfigManager::instance();
+
+    drogon::app().setLogLocalTime(true); 
+
     LOG_INFO << "Starting API Server...";
 
     // 主库

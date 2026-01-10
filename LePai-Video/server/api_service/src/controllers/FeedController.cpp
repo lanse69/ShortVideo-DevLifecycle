@@ -82,3 +82,159 @@ void FeedController::getDiscoveryFeed(const drogon::HttpRequestPtr& req, std::fu
         });
     });
 }
+
+void FeedController::getFollowingFeed(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback)
+{
+    // 获取登录用户 ID (由 LoginFilter 注入)
+    std::string userId = req->attributes()->get<std::string>("userId");
+    
+    // 获取分页参数
+    int limit = req->getParameter("limit").empty() ? 10 : std::stoi(req->getParameter("limit"));
+    int offset = req->getParameter("offset").empty() ? 0 : std::stoi(req->getParameter("offset"));
+
+    if (limit > 50) limit = 50;
+
+    recommendService->getFollowingFeed(userId, limit, offset, [callback, limit, offset](std::vector<lepai::entity::Video> videos, const std::string& err) {
+        if (!err.empty()) {
+            auto resp = drogon::HttpResponse::newHttpResponse();
+            resp->setStatusCode(drogon::k500InternalServerError);
+            resp->setBody("Service Error");
+            callback(resp);
+            return;
+        }
+
+        Json::Value ret;
+        ret["code"] = 200;
+        ret["message"] = "success";
+        
+        Json::Value list(Json::arrayValue);
+        for (const auto& v : videos) {
+            list.append(v.toJson());
+        }
+        ret["data"] = list;
+
+        // 计算 next_offset
+        int nextOffset;
+        if (videos.size() < limit) {
+            nextOffset = 0; // 没有更多数据了
+        } else {
+            nextOffset = offset + (int)videos.size();
+        }
+        ret["next_offset"] = nextOffset;
+
+        callback(drogon::HttpResponse::newHttpJsonResponse(ret));
+    });
+}
+
+// 获取点赞列表
+void FeedController::getLikedFeed(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback)
+{
+    tryGetUserId(req, [this, req, callback](std::string currentUserId) {
+        
+        std::string targetUserId = req->getParameter("user_id");
+
+        if (targetUserId.empty()) {
+            if (currentUserId.empty()) {
+                // 既没传目标ID，自己又是游客 -> 报错
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k401Unauthorized);
+                resp->setBody("Login required to view your own likes");
+                callback(resp);
+                return;
+            }
+            // 没传参数，默认为看自己
+            targetUserId = currentUserId;
+        }
+
+        int limit = req->getParameter("limit").empty() ? 10 : std::stoi(req->getParameter("limit"));
+        int offset = req->getParameter("offset").empty() ? 0 : std::stoi(req->getParameter("offset"));
+        if (limit > 50) limit = 50;
+
+        // targetUserId: 查谁的列表
+        // currentUserId: 我是谁
+        recommendService->getLikedFeed(targetUserId, currentUserId, limit, offset, [callback, limit, offset](std::vector<lepai::entity::Video> videos, const std::string& err) {
+            if (!err.empty()) {
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k500InternalServerError);
+                resp->setBody("Service Error");
+                callback(resp);
+                return;
+            }
+
+            Json::Value ret;
+            ret["code"] = 200;
+            ret["message"] = "success";
+            
+            Json::Value list(Json::arrayValue);
+            for (const auto& v : videos) {
+                list.append(v.toJson());
+            }
+            ret["data"] = list;
+
+            int nextOffset;
+            if (videos.size() < limit) {
+                nextOffset = 0;
+            } else {
+                nextOffset = offset + (int)videos.size();
+            }
+            ret["next_offset"] = nextOffset;
+
+            callback(drogon::HttpResponse::newHttpJsonResponse(ret));
+        });
+    });
+}
+
+// 获取用户发布列表
+void FeedController::getUserUploadFeed(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback)
+{
+    // 尝试获取当前用户 ID
+    tryGetUserId(req, [this, req, callback](std::string currentUserId) {
+        
+        std::string targetUserId = req->getParameter("user_id");
+
+        if (targetUserId.empty()) {
+            if (currentUserId.empty()) {
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k401Unauthorized);
+                resp->setBody("Login required to view your own uploads");
+                callback(resp);
+                return;
+            }
+            targetUserId = currentUserId;
+        }
+
+        int limit = req->getParameter("limit").empty() ? 10 : std::stoi(req->getParameter("limit"));
+        int offset = req->getParameter("offset").empty() ? 0 : std::stoi(req->getParameter("offset"));
+        if (limit > 50) limit = 50;
+
+        recommendService->getUserUploadFeed(targetUserId, currentUserId, limit, offset, [callback, limit, offset](std::vector<lepai::entity::Video> videos, const std::string& err) {
+            if (!err.empty()) {
+                auto resp = drogon::HttpResponse::newHttpResponse();
+                resp->setStatusCode(drogon::k500InternalServerError);
+                resp->setBody("Service Error");
+                callback(resp);
+                return;
+            }
+
+            Json::Value ret;
+            ret["code"] = 200;
+            ret["message"] = "success";
+            
+            Json::Value list(Json::arrayValue);
+            for (const auto& v : videos) {
+                list.append(v.toJson());
+            }
+            ret["data"] = list;
+
+            int nextOffset;
+            if (videos.size() < limit) {
+                nextOffset = 0;
+            } else {
+                nextOffset = offset + (int)videos.size();
+            }
+            ret["next_offset"] = nextOffset;
+
+            callback(drogon::HttpResponse::newHttpJsonResponse(ret));
+        });
+    });
+}
