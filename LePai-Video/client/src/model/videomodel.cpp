@@ -9,7 +9,7 @@ VideoModel::VideoModel()
 VideoModel::VideoModel(const QString& id,  const QString& title,
                        const QString& url, const QString& coverUrl, int duration,
                        long long likeCount,
-                       const QString& authorName, const QString& authorAvatar, bool isLiked)
+                       const QString& authorName, const QString& authorAvatar, bool isLiked,bool isFollowed)
     : m_id(id)
     //, m_userId(userId)
     , m_title(title)
@@ -20,7 +20,9 @@ VideoModel::VideoModel(const QString& id,  const QString& title,
     //, m_createdAt(createdAt)
     , m_authorName(authorName)
     , m_authorAvatar(authorAvatar)
-    , m_isLiked(isLiked) {
+    , m_isLiked(isLiked)
+    ,m_isFollowed(isFollowed)
+{
 }
 
 VideoModel VideoModel::fromJson(const QJsonObject &json) {
@@ -35,6 +37,7 @@ VideoModel VideoModel::fromJson(const QJsonObject &json) {
     video.m_authorName = json["author"].toString();  // 服务端返回的是 author
     video.m_authorAvatar = json["author_avatar"].toString();  // 服务端返回的是 author_avatar
     video.m_isLiked = json["is_liked"].toBool();  // 注意字段名映射
+    video.m_isFollowed=json["is_followed"].toBool();
 
     // 注意：服务端返回的JSON中没有userId和createdAt字段
     // 这些字段在服务端的Video结构体中有，但toJson()方法没有包含它们
@@ -56,6 +59,7 @@ QJsonObject VideoModel::toJson() const {
     json["author"] = m_authorName;
     json["author_avatar"] = m_authorAvatar;
     json["is_liked"] = m_isLiked;
+    json["is_followed"] = m_isFollowed;
     return json;
 }
 
@@ -72,5 +76,7 @@ QVariantMap VideoModel::toVariantMap() const {
     map["authorName"] = m_authorName;  // 注意字段名映射
     map["authorAvatar"] = m_authorAvatar;
     map["isLiked"] = m_isLiked;
+    map["isFollowed"] = m_isFollowed;
+
     return map;
 }

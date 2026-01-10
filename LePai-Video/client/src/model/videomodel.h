@@ -7,8 +7,6 @@
 class VideoModel {
 public:
     VideoModel();
-
-    // 修改构造函数参数以匹配服务端字段
     VideoModel(const QString& id,  const QString& title,
                const QString& url, const QString& coverUrl, int duration,
                long long likeCount,
@@ -32,4 +30,5 @@ private:
     QString m_authorName;    // 对应服务端 author
     QString m_authorAvatar;  // 对应服务端 author_avatar
     bool m_isLiked;
+    bool m_isFollowed;
 };

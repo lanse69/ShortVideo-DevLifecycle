@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import LePaiClient
 
 ApplicationWindow {
     id: mainWindow
@@ -31,6 +32,29 @@ ApplicationWindow {
             // 桌面居中显示
             x = (Screen.width - width) / 2
             y = (Screen.height - height) / 2
+        }
+    }
+    AuthManager{
+        id:authManager
+        property string loginMassage;
+        property string registMassage;
+        onRegistrationSuccess:{
+            console.log("authManager:注册成功")
+            registMassage="注册成功"
+        }
+        onRegistrationFailed:(message)=>{
+            registMassage="注册失败"+message
+            console.log("注册失败")
+        }
+        onLoginSuccess:{
+            loginMassage="登陆成功"
+            console.log(loginMassage)
+            authManager.wasLogin=true
+            console.log(authManager.wasLogin)
+        }
+        onLoginFailed:(message)=>{
+            loginMassage=message
+            console.log(loginMassage)
         }
     }
 

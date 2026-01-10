@@ -40,20 +40,6 @@ Item {
            close()
        }
    }
-    AuthManager {
-        id: authManager
-
-        onRegistrationSuccess: {
-            statusLabel.color = "green"
-            statusLabel.text = "注册成功！"
-            console.log("Register OK")
-        }
-
-        onRegistrationFailed: (message) => {
-            statusLabel.color = "red"
-            statusLabel.text = "注册失败: " + message
-        }
-    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -82,15 +68,15 @@ Item {
 
         Label {
             id: statusLabel
-            visible: text !== ""
+            visible: true
             Layout.fillWidth: true
+            text:authManager.registMassage
         }
 
         Button {
             text: "注册"
             Layout.fillWidth: true
             onClicked: {
-                statusLabel.text = "提交中..."
                 statusLabel.color = "blue"
                 authManager.registerUser(usernameField.text, passwordField.text)
             }
