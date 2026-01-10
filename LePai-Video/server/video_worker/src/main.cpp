@@ -17,14 +17,13 @@ int main(int argc, char *argv[]) {
 
     auto& cfg = ConfigManager::instance();
 
-    // 初始化 Drogon 客户端
     // 数据库 (Default Write)
     drogon::app().createDbClient("postgresql", 
         cfg.getDbMasterHost(),
         cfg.getDbMasterPort(),
-        "lepai_db",      
-        "lepai_admin",   
-        "lepai_password",
+        cfg.getDbName(),
+        cfg.getDbUser(),
+        cfg.getDbPassword(),
         1,
         "default",
         "default"
@@ -33,9 +32,9 @@ int main(int argc, char *argv[]) {
     // Redis
     drogon::app().createRedisClient(
         cfg.getRedisHost(),
-        6379,
+        cfg.getRedisPort(),
         "default",
-        ""
+        cfg.getRedisPassword()
     );
 
     // 实例化服务

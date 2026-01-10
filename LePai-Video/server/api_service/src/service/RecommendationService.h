@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../repository/VideoRepository.h"
+#include "../repository/UserRepository.h"
 
 namespace lepai {
 namespace service {
@@ -17,6 +18,7 @@ public:
 
 private:
     std::shared_ptr<lepai::repository::VideoRepository> videoRepo;
+    std::shared_ptr<lepai::repository::UserRepository> userRepo;
 
     // 如果不走缓存或缓存未命中，查库
     void fetchFromDb(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback);

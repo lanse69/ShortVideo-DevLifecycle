@@ -1,4 +1,9 @@
-sudo rm /var/lib/pacman/db.lck
+# 按顺序执行脚本
+./cleanup_docker.sh # 清理docker（docker相关配置和数据库表改变了需执行）
+./install_dependencies.sh # 下载安装相关依赖
+./configure_env.sh # 获得IP，配置相关配置（修改复制配置模板）
+./setup_docker.sh # 启动docker，及相关服务
+./setup_minio_buckets.sh # 配置minio及添加初始资源（只需在基础设施所在的机器上运行）
 
 # 停止本地 PostgreSQL
 sudo systemctl stop postgresql
@@ -33,3 +38,5 @@ EOF
 # 重启 Docker
 sudo systemctl daemon-reload
 sudo systemctl restart docker
+
+sudo rm /var/lib/pacman/db.lck

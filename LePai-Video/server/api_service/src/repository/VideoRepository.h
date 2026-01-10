@@ -25,6 +25,15 @@ public:
 
     // 创建视频记录 (初始状态 status=0 处理中)
     void createVideo(const lepai::entity::Video& video, VoidCallback callback);
+
+    // 添加点赞记录
+    void addLikeRecord(const std::string& userId, const std::string& videoId, VoidCallback callback);
+
+    // 移除点赞记录
+    void removeLikeRecord(const std::string& userId, const std::string& videoId, VoidCallback callback);
+    
+    // 获取视频当前的基准点赞数 (用于缓存未命中时初始化 Redis)
+    void getVideoLikeCount(const std::string& videoId, std::function<void(long long)> callback);
 };
 
 }

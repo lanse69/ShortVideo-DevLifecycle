@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <drogon/HttpClient.h>
 
 namespace lepai {
 namespace storage {
@@ -24,6 +25,8 @@ private:
     std::string endpoint_;
     std::string accessKey_;
     std::string secretKey_;
+
+    std::shared_ptr<drogon::HttpClient> client_;
 };
 
 }

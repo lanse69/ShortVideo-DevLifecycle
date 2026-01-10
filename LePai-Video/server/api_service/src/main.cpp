@@ -18,27 +18,27 @@ int main(int argc, char *argv[]) {
     auto& cfg = ConfigManager::instance();
     LOG_INFO << "Starting API Server...";
 
-    // [Client 1] 主库
+    // 主库
     LOG_INFO << "Master DB: " << cfg.getDbMasterHost() << ":" << cfg.getDbMasterPort();
     drogon::app().createDbClient("postgresql", 
         cfg.getDbMasterHost(),
         cfg.getDbMasterPort(),
-        "lepai_db",      
-        "lepai_admin",   
-        "lepai_password",
+        cfg.getDbName(),
+        cfg.getDbUser(),
+        cfg.getDbPassword(),
         1,
         "default",
         "default"
     );
 
-    // [Client 2] 从库
+    // 从库
     LOG_INFO << "Slave DB : " << cfg.getDbSlaveHost() << ":" << cfg.getDbSlavePort();
     drogon::app().createDbClient("postgresql", 
         cfg.getDbSlaveHost(),
         cfg.getDbSlavePort(),
-        "lepai_db",
-        "lepai_admin",
-        "lepai_password",
+        cfg.getDbName(),
+        cfg.getDbUser(),
+        cfg.getDbPassword(),
         10,
         "default",
         "slave"
@@ -48,9 +48,9 @@ int main(int argc, char *argv[]) {
     LOG_INFO << "Redis Host: " << cfg.getRedisHost();
     drogon::app().createRedisClient(
         cfg.getRedisHost(),
-        6379,
+        cfg.getRedisPort(),
         "default",
-        ""
+        cfg.getRedisPassword()
     );
 
     // 定时任务

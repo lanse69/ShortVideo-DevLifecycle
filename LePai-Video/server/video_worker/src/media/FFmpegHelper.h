@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <optional>
+#include <vector>
 
 namespace lepai {
 namespace worker {
@@ -28,6 +28,16 @@ public:
      * @return false 失败
      */
     static bool transcodeToHls(const std::string& inputUrl, const std::string& outputDir, const std::string& filePrefix);
+
+private:
+    /**
+     * @brief 安全执行外部命令
+     * @param program 程序名
+     * @param args 参数列表
+     * @param output 引用参数，用于接收标准输出内容 (仅当需要获取输出时使用)
+     * @return int 进程退出码 (0表示成功)
+     */
+    static int runProcess(const std::string& program, const std::vector<std::string>& args, std::string* output = nullptr);
 };
 
 }

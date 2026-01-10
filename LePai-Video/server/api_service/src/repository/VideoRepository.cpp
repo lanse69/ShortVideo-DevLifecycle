@@ -121,5 +121,73 @@ void VideoRepository::createVideo(const lepai::entity::Video& video, VoidCallbac
     );
 }
 
+// 添加点赞
+void VideoRepository::addLikeRecord(const std::string& userId, const std::string& videoId, VoidCallback callback) 
+{
+    auto db = drogon::app().getDbClient("default"); // 写主库
+    
+    // 使用 ON CONFLICT DO NOTHING 防止重复点赞报错
+    db->execSqlAsync(
+        "INSERT INTO video_likes (user_id, video_id, created_at) VALUES ($1, $2, NOW()) ON CONFLICT DO NOTHING",
+        [callback](const drogon::orm::Result& r) {
+            // affected_rows() == 1 表示插入成功，== 0 表示已经点过赞了
+            if (r.affectedRows() > 0) {
+                callback(true, "");
+            } else {
+                callback(false, "Already liked");
+            }
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "Add Like DB Error: " << e.base().what();
+            callback(false, e.base().what());
+        },
+        userId, videoId
+    );
+}
+
+// 取消点赞
+void VideoRepository::removeLikeRecord(const std::string& userId, const std::string& videoId, VoidCallback callback) 
+{
+    auto db = drogon::app().getDbClient("default");
+    
+    db->execSqlAsync(
+        "DELETE FROM video_likes WHERE user_id = $1 AND video_id = $2",
+        [callback](const drogon::orm::Result& r) {
+            if (r.affectedRows() > 0) {
+                callback(true, "");
+            } else {
+                callback(false, "Like record not found");
+            }
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "Remove Like DB Error: " << e.base().what();
+            callback(false, e.base().what());
+        },
+        userId, videoId
+    );
+}
+
+// 获取基准计数
+void VideoRepository::getVideoLikeCount(const std::string& videoId, std::function<void(long long)> callback)
+{
+    // 读从库
+    auto db = drogon::app().getDbClient("slave");
+    db->execSqlAsync(
+        "SELECT like_count FROM videos WHERE id = $1",
+        [callback](const drogon::orm::Result& r) {
+            if (r.size() > 0) {
+                callback(r[0]["like_count"].as<long long>());
+            } else {
+                callback(0);
+            }
+        },
+        [callback](const drogon::orm::DrogonDbException& e) {
+            LOG_ERROR << "Get Like Count DB Error: " << e.base().what();
+            callback(0);
+        },
+        videoId
+    );
+}
+
 }
 }

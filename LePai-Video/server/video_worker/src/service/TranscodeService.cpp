@@ -32,8 +32,8 @@ TranscodeService::TranscodeService() {
     
     storage = std::make_unique<lepai::storage::MinioClient>(
         minioEndpoint,
-        "lepai_minio", 
-        "lepai_minio_pass"
+        cfg.getMinioUser(),
+        cfg.getMinioPassword()
     );
 }
 

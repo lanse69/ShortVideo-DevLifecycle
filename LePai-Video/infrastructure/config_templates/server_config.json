@@ -3,10 +3,19 @@
     "db_master_port": 5432,
     "db_slave_host": "{{PC1_IP}}",
     "db_slave_port": 5433,
+    "db_name": "lepai_db",
+    "db_user": "lepai_admin",
+    "db_password": "lepai_password",
+
     "redis_host": "{{PC1_IP}}",
     "redis_port": 6379,
+    "redis_password": "",
+
     "minio_host": "{{PC1_IP}}",
     "minio_port": 9000,
+    "minio_user": "lepai_minio",
+    "minio_password": "lepai_minio_pass",
+
     "cdn_host": "{{PC3_IP}}", 
     "cdn_port": 8001,
     "server_role": "api_service"

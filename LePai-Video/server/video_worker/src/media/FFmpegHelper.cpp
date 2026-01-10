@@ -1,28 +1,81 @@
 #include "FFmpegHelper.h"
 
 #include <drogon/drogon.h>
-#include <cstdio>
-#include <memory>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <cstring>
 #include <array>
-#include <cstdlib>
 
 namespace lepai {
 namespace worker {
 namespace media {
 
-// 执行 Shell 命令并获取输出
-std::string exec(const char* cmd) 
+int FFmpegHelper::runProcess(const std::string& program, const std::vector<std::string>& args, std::string* output) 
 {
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe) {
-        throw std::runtime_error("popen() failed!");
+    int pipefd[2];
+    if (output && pipe(pipefd) == -1) {
+        LOG_ERROR << "pipe() failed";
+        return -1;
     }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-        result += buffer.data();
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        LOG_ERROR << "fork() failed";
+        return -1;
     }
-    return result;
+
+    if (pid == 0) {
+        // 子进程
+        if (output) {
+            close(pipefd[0]); // 关闭读端
+            dup2(pipefd[1], STDOUT_FILENO);
+            close(pipefd[1]);
+        } else {
+            int devNull = open("/dev/null", O_WRONLY);
+            dup2(devNull, STDOUT_FILENO);
+            dup2(devNull, STDERR_FILENO);
+            close(devNull);
+        }
+
+        // 构造参数数组 char* const argv[]
+        std::vector<char*> c_args;
+        c_args.push_back(const_cast<char*>(program.c_str()));
+        for (const auto& arg : args) {
+            c_args.push_back(const_cast<char*>(arg.c_str()));
+        }
+        c_args.push_back(nullptr);
+
+        // 执行命令
+        execvp(program.c_str(), c_args.data());
+        
+        // 如果 execvp 返回，说明出错了
+        perror("execvp failed");
+        exit(1);
+    } else {
+        // 父进程
+        int status;
+        
+        if (output) {
+            close(pipefd[1]); // 关闭写端
+            
+            // 读取子进程输出
+            std::array<char, 128> buffer;
+            ssize_t bytesRead;
+            while ((bytesRead = read(pipefd[0], buffer.data(), buffer.size())) > 0) {
+                output->append(buffer.data(), bytesRead);
+            }
+            close(pipefd[0]);
+        }
+
+        // 等待子进程结束
+        waitpid(pid, &status, 0);
+
+        if (WIFEXITED(status)) {
+            return WEXITSTATUS(status);
+        }
+        return -1;
+    }
 }
 
 int FFmpegHelper::getVideoDuration(const std::string& inputPath) 
@@ -31,16 +84,24 @@ int FFmpegHelper::getVideoDuration(const std::string& inputPath)
     // -v error: 只显示错误
     // -show_entries: 只显示时长
     // -of default=...: 格式化输出，只输出纯数字
-    std::string cmd = "ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 \"" + inputPath + "\"";
+    std::vector<std::string> args = {
+        "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        inputPath
+    };
+
+    std::string out;
+    int ret = runProcess("ffprobe", args, &out);
     
-    try {
-        std::string out = exec(cmd.c_str());
-        if (out.empty()) return 0;
-        return std::stoi(out); // 转为整数秒
-    } catch (const std::exception& e) {
-        LOG_ERROR << "FFprobe failed: " << e.what();
-        return 0;
+    if (ret == 0 && !out.empty()) {
+        try {
+            return std::stoi(out);
+        } catch (...) {
+            return 0;
+        }
     }
+    return 0;
 }
 
 bool FFmpegHelper::generateThumbnail(const std::string& inputPath, const std::string& outputPath) 
@@ -50,9 +111,16 @@ bool FFmpegHelper::generateThumbnail(const std::string& inputPath, const std::st
     // -i input: 输入
     // -vframes 1: 只输出1帧
     // -y: 覆盖输出文件
-    std::string cmd = "ffmpeg -ss 00:00:01 -i \"" + inputPath + "\" -vframes 1 -q:v 2 -y \"" + outputPath + "\" > /dev/null 2>&1";
-    
-    int ret = std::system(cmd.c_str());
+    std::vector<std::string> args = {
+        "-ss", "00:00:01",
+        "-i", inputPath,
+        "-vframes", "1",
+        "-q:v", "2",
+        "-y",
+        outputPath
+    };
+
+    int ret = runProcess("ffmpeg", args);
     return (ret == 0);
 }
 
@@ -66,26 +134,28 @@ bool FFmpegHelper::transcodeToHls(const std::string& inputUrl, const std::string
     // -i inputUrl: 输入
     // -c:v libx264: 视频编码器使用 H.264
     // -c:a aac: 音频编码器
-    // -strict -2: 允许使用 AAC
     // -f hls: 输出格式为 HLS
     // -hls_time 10: 每个切片约 10 秒
     // -hls_list_size 0: m3u8 包含所有切片 (点播模式)
     // -hls_segment_filename: 切片文件命名规则
     // -preset veryfast -crf 23 平衡速度和质量
-    std::stringstream cmd;
-    cmd << "ffmpeg -v error -i \"" << inputUrl << "\" "
-        << "-c:v libx264 -preset veryfast -crf 23 "
-        << "-c:a aac -b:a 128k "
-        << "-f hls "
-        << "-hls_time 10 "
-        << "-hls_list_size 0 "
-        << "-hls_segment_filename \"" << segmentPattern << "\" "
-        << "\"" << playlistPath << "\" "
-        << "> /dev/null 2>&1";
+    std::vector<std::string> args = {
+        "-v", "error",
+        "-i", inputUrl,
+        "-c:v", "libx264",
+        "-preset", "veryfast",
+        "-crf", "23",
+        "-c:a", "aac",
+        "-b:a", "128k",
+        "-f", "hls",
+        "-hls_time", "10",
+        "-hls_list_size", "0",
+        "-hls_segment_filename", segmentPattern,
+        playlistPath
+    };
 
-    LOG_INFO << "Executing Transcode: " << cmd.str();
-    
-    int ret = std::system(cmd.str().c_str());
+    LOG_INFO << "Starting HLS transcode...";
+    int ret = runProcess("ffmpeg", args);
     return (ret == 0);
 }
 

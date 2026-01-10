@@ -47,5 +47,79 @@ void VideoService::publishVideo(const std::string& userId, const std::string& ti
     });
 }
 
+void VideoService::toggleLike(const std::string& userId, const std::string& videoId, bool action, std::function<void(bool, long long, const std::string&)> callback) 
+{
+    // 操作数据库的关系表 (Source of Truth)
+    auto dbCallback = [this, videoId, action, callback](bool success, const std::string& err) {
+        if (!success) {
+            // 数据库操作失败
+            callback(false, -1, err.empty() ? "Operation failed" : err);
+            return;
+        }
+
+        // 数据库更新成功后，更新 Redis 计数
+        int delta = action ? 1 : -1;
+        updateRedisLikeCount(videoId, delta, [callback](long long newCount) {
+            callback(true, newCount, "Success");
+        });
+    };
+
+    if (action) {
+        videoRepo->addLikeRecord(userId, videoId, dbCallback);
+    } else {
+        videoRepo->removeLikeRecord(userId, videoId, dbCallback);
+    }
+}
+
+void VideoService::updateRedisLikeCount(const std::string& videoId, int delta, std::function<void(long long)> resultCallback)
+{
+    auto redis = drogon::app().getRedisClient();
+    std::string key = "video:likes:" + videoId;
+
+    redis->execCommandAsync(
+        [this, redis, key, videoId, delta, resultCallback](const drogon::nosql::RedisResult& r) {
+            if (r.type() != drogon::nosql::RedisResultType::kNil) {
+                // Key 存在，直接增减
+                redis->execCommandAsync(
+                    [redis, videoId, resultCallback](const drogon::nosql::RedisResult& r2) {
+                        long long val = r2.asInteger();
+                        // 加入脏队列，供 Scheduler 同步回 DB videos 表
+                        redis->execCommandAsync(
+                            [](const drogon::nosql::RedisResult&){}, [](const std::exception&){},
+                            "SADD dirty_videos %s", videoId.c_str()
+                        );
+                        resultCallback(val);
+                    },
+                    [](const std::exception&){},
+                    delta > 0 ? "INCR %s" : "DECR %s", key.c_str()
+                );
+            } else {
+                // Key 不存在 (Cache Miss)，回源查 DB
+                videoRepo->getVideoLikeCount(videoId, [this, redis, key, videoId, delta, resultCallback](long long dbCount) {
+                    long long newCount = dbCount + delta;
+                    if (newCount < 0) newCount = 0;
+
+                    // 重建缓存并设置过期时间(24h)
+                    redis->execCommandAsync(
+                        [redis, videoId](const drogon::nosql::RedisResult&){
+                             // 加入脏队列
+                             redis->execCommandAsync(
+                                [](const drogon::nosql::RedisResult&){}, [](const std::exception&){},
+                                "SADD dirty_videos %s", videoId.c_str()
+                            );
+                        }, 
+                        [](const std::exception&){},
+                        "SETEX %s 86400 %lld", key.c_str(), newCount
+                    );
+                    
+                    resultCallback(newCount);
+                });
+            }
+        },
+        [](const std::exception& e) { LOG_ERROR << "Redis Error: " << e.what(); },
+        "GET %s", key.c_str()
+    );
+}
+
 }
 }

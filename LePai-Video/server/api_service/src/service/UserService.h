@@ -39,6 +39,17 @@ public:
     // 上传头像业务
     void uploadAvatar(const std::string& userId, const std::string& localFilePath, const std::string& fileExt, std::function<void(bool success, const std::string& url)> callback);
 
+    // action: true=关注, false=取关
+    void followUser(const std::string& currentUserId, const std::string& targetUserId, bool action, std::function<void(bool success, const std::string& msg)> callback);
+
+    // 获取用户资料
+    // targetUserId: 要查看的目标用户 ID
+    // currentUserId: 当前登录用户 ID
+    void getUserProfile(const std::string& targetUserId, const std::string& currentUserId, std::function<void(const std::optional<lepai::entity::User>&, const std::string& err)> callback);
+
+    // 修改用户名业务
+    void changeUsername(const std::string& userId, const std::string& newName, std::function<void(bool success, const std::string& msg)> callback);
+
 private:
     std::shared_ptr<lepai::repository::UserRepository> userRepo;
     std::shared_ptr<lepai::repository::SessionRepository> sessionRepo;

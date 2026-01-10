@@ -23,6 +23,7 @@ struct Video {
 
     // 个性化状态 (仅登录用户有效)
     bool isLiked = false;
+    bool isFollowed = false;
 
     // 序列化为 JSON
     Json::Value toJson() const {
@@ -36,6 +37,7 @@ struct Video {
         v["author"] = authorName;
         v["author_avatar"] = authorAvatar;
         v["is_liked"] = isLiked;
+        v["is_followed"] = isFollowed;
         return v;
     }
     
@@ -51,6 +53,7 @@ struct Video {
         video.authorName = v.get("author", "").asString();
         video.authorAvatar = v.get("author_avatar", "").asString();
         video.isLiked = false; // 缓存中不存个性化状态
+        video.isFollowed = false;
         return video;
     }
 };

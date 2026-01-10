@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(64) PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
+    following_count INT DEFAULT 0,
+    follower_count INT DEFAULT 0,
     avatar_url VARCHAR(255) DEFAULT '/public/defaults/default.png', -- 默认头像
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -37,8 +39,18 @@ CREATE TABLE IF NOT EXISTS video_likes (
     PRIMARY KEY (user_id, video_id)
 );
 
+-- 关注关系表
+CREATE TABLE IF NOT EXISTS user_follows (
+    follower_id VARCHAR(64) NOT NULL REFERENCES users(id), -- 谁点的关注 (A)
+    following_id VARCHAR(64) NOT NULL REFERENCES users(id), -- 关注了谁 (B)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (follower_id, following_id)
+);
+
 -- 索引
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_videos_created_at ON videos(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_videos_user_id ON videos(user_id);
 CREATE INDEX IF NOT EXISTS idx_video_likes_user ON video_likes(user_id);
+CREATE INDEX IF NOT EXISTS idx_follows_follower ON user_follows(follower_id);
+CREATE INDEX IF NOT EXISTS idx_follows_following ON user_follows(following_id);

@@ -148,3 +148,124 @@ void UserController::updateAvatar(const drogon::HttpRequestPtr& req, std::functi
         callback(drogon::HttpResponse::newHttpJsonResponse(ret));
     });
 }
+
+
+void UserController::follow(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback) 
+{
+    // 鉴权 (LoginFilter 注入)
+    std::string currentUserId = req->attributes()->get<std::string>("userId");
+
+    // 解析
+    auto jsonPtr = req->getJsonObject();
+    if (!jsonPtr || !jsonPtr->isMember("target_id") || !jsonPtr->isMember("action")) {
+        auto resp = drogon::HttpResponse::newHttpResponse();
+        resp->setStatusCode(drogon::k400BadRequest);
+        resp->setBody("Missing target_id or action");
+        callback(resp);
+        return;
+    }
+
+    std::string targetId = (*jsonPtr)["target_id"].asString();
+    bool action = (*jsonPtr)["action"].asBool();
+
+    userService->followUser(currentUserId, targetId, action, [callback](bool success, const std::string& msg) {
+        Json::Value ret;
+        if (success) {
+            ret["code"] = 200;
+            ret["message"] = msg;
+        } else {
+            if (msg == "Cannot follow yourself") {
+                ret["code"] = 400;
+            } else {
+                ret["code"] = 500;
+            }
+            ret["message"] = msg;
+        }
+        auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
+        if (!success && ret["code"] == 500) resp->setStatusCode(drogon::k500InternalServerError);
+        callback(resp);
+    });
+}
+
+void UserController::getUserInfo(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback, std::string userIdParam) 
+{
+    // 获取当前登录用户 ID (从 LoginFilter)
+    std::string currentUserId = req->attributes()->get<std::string>("userId");
+    
+    // 确定目标 ID
+    std::string targetId;
+    if (userIdParam.empty()) {
+        // 没传参数 -> 查看自己
+        targetId = currentUserId;
+    } else {
+        // 传了参数 -> 查看别人
+        targetId = userIdParam;
+    }
+
+    if (targetId.empty()) {
+         auto resp = drogon::HttpResponse::newHttpResponse();
+         resp->setStatusCode(drogon::k400BadRequest);
+         resp->setBody("User ID required");
+         callback(resp);
+         return;
+    }
+
+    userService->getUserProfile(targetId, currentUserId, [callback](const std::optional<lepai::entity::User>& userOpt, const std::string& err) {
+        if (!userOpt.has_value()) {
+            Json::Value ret;
+            ret["code"] = 404;
+            ret["message"] = err.empty() ? "User not found" : err;
+            auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
+            resp->setStatusCode(drogon::k404NotFound);
+            callback(resp);
+            return;
+        }
+
+        Json::Value ret;
+        ret["code"] = 200;
+        ret["message"] = "success";
+        ret["data"] = userOpt.value().toJson();
+        
+        callback(drogon::HttpResponse::newHttpJsonResponse(ret));
+    });
+}
+
+void UserController::updateName(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback) 
+{
+    // 获取当前用户 ID (LoginFilter 注入)
+    std::string userId = req->attributes()->get<std::string>("userId");
+
+    // 解析 JSON
+    auto jsonPtr = req->getJsonObject();
+    if (!jsonPtr || !jsonPtr->isMember("new_name")) {
+        auto resp = drogon::HttpResponse::newHttpResponse();
+        resp->setStatusCode(drogon::k400BadRequest);
+        resp->setBody("Missing 'new_name'");
+        callback(resp);
+        return;
+    }
+
+    std::string newName = (*jsonPtr)["new_name"].asString();
+
+    userService->changeUsername(userId, newName, [callback](bool success, const std::string& msg) {
+        Json::Value ret;
+        if (success) {
+            ret["code"] = 200;
+            ret["message"] = msg;
+        } else {
+            // 区分错误类型
+            if (msg == "Username already exists") {
+                ret["code"] = 409; // Conflict
+            } else if (msg == "Invalid username length") {
+                ret["code"] = 400; // Bad Request
+            } else {
+                ret["code"] = 500; // Internal Server Error
+            }
+            ret["message"] = msg;
+        }
+
+        auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
+        if (!success && ret["code"] == 500) resp->setStatusCode(drogon::k500InternalServerError);
+        callback(resp);
+    });
+}

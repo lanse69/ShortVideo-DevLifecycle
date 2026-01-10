@@ -8,19 +8,27 @@ public:
     static ConfigManager& instance();
     bool loadConfig(const std::string& configPath);
 
-    // 主库 (Write)
+    // 数据库
     std::string getDbMasterHost() const;
     int getDbMasterPort() const;
-
-    // 从库 (Read)
     std::string getDbSlaveHost() const;
     int getDbSlavePort() const;
+    std::string getDbName() const;
+    std::string getDbUser() const;
+    std::string getDbPassword() const;
 
+    // Redis
     std::string getRedisHost() const;
-    
+    int getRedisPort() const;
+    std::string getRedisPassword() const;
+
+    // MinIO
     std::string getMinioHost() const;
     int getMinioPort() const;
+    std::string getMinioUser() const;
+    std::string getMinioPassword() const;
 
+    // CDN
     std::string getCdnHost() const;
     int getCdnPort() const;
 
