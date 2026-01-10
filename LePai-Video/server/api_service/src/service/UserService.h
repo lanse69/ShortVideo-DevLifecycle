@@ -7,6 +7,7 @@
 
 #include "../repository/UserRepository.h"
 #include "../repository/SessionRepository.h"
+#include "MinioClient.h"
 
 namespace lepai {
 namespace service {
@@ -35,9 +36,13 @@ public:
     // 登出业务逻辑
     void logout(const std::string& token, LogoutCallback callback);
 
+    // 上传头像业务
+    void uploadAvatar(const std::string& userId, const std::string& localFilePath, const std::string& fileExt, std::function<void(bool success, const std::string& url)> callback);
+
 private:
     std::shared_ptr<lepai::repository::UserRepository> userRepo;
     std::shared_ptr<lepai::repository::SessionRepository> sessionRepo;
+    std::unique_ptr<lepai::storage::MinioClient> storageClient;
 };
 
 }

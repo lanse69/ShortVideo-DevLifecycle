@@ -5,7 +5,28 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 PROJECT_ROOT="$SCRIPT_DIR/../.."
 
 # 获取本机局域网 IP
-AUTO_IP=$(hostname -I | awk '{print $1}')
+get_ip() {
+    local ip_addr=""
+    
+    # ip route
+    if [ -z "$ip_addr" ]; then
+        ip_addr=$(ip route get 8.8.8.8 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") print $(i+1)}')
+    fi
+    
+    # hostname
+    if [ -z "$ip_addr" ]; then
+        ip_addr=$(hostname -I 2>/dev/null | awk '{print $1}')
+    fi
+    
+    # ip addr
+    if [ -z "$ip_addr" ]; then
+        ip_addr=$(ip addr show | grep 'inet ' | grep -v '127.0.0.1' | grep -v '172.' | awk '{print $2}' | cut -d/ -f1 | head -n1)
+    fi
+
+    echo "$ip_addr"
+}
+
+AUTO_IP=$(get_ip)
 
 echo "=========================================="
 echo "   乐拍视界 (LePai-Video) 环境配置向导"

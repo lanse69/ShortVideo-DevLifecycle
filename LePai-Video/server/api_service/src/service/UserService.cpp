@@ -3,6 +3,7 @@
 #include <drogon/drogon.h>
 
 #include "utils.h"
+#include "config_manager.h"
 
 namespace lepai {
 namespace service {
@@ -10,6 +11,13 @@ namespace service {
 UserService::UserService() {
     userRepo = std::make_shared<lepai::repository::UserRepository>();
     sessionRepo = std::make_shared<lepai::repository::SessionRepository>();
+
+    // 初始化 MinIO 客户端
+    auto& cfg = ConfigManager::instance();
+    std::string endpoint = cfg.getMinioHost() + ":" + std::to_string(cfg.getMinioPort());
+    storageClient = std::make_unique<lepai::storage::MinioClient>(
+        endpoint, "lepai_minio", "lepai_minio_pass"
+    );
 }
 
 void UserService::registerUser(const std::string& username, const std::string& password, RegisterCallback callback) 
@@ -84,6 +92,32 @@ void UserService::login(const std::string& username, const std::string& password
 
 void UserService::logout(const std::string& token, LogoutCallback callback) {
     sessionRepo->removeSession(token, callback);
+}
+
+void UserService::uploadAvatar(const std::string& userId, const std::string& localFilePath, const std::string& fileExt, std::function<void(bool, const std::string&)> callback) 
+{
+    auto& cfg = ConfigManager::instance();
+    std::string cdnBase = "http://" + cfg.getCdnHost() + ":" + std::to_string(cfg.getCdnPort());
+
+    // 上传到 MinIO
+    // 命名规则: avatars/userid.ext
+    std::string objectKey = "avatars/" + userId + fileExt;
+    
+    std::string avatarUrl = storageClient->uploadFile("public", objectKey, localFilePath, cdnBase);
+
+    if (avatarUrl.empty()) {
+        callback(false, "");
+        return;
+    }
+
+    // 更新数据库
+    userRepo->updateAvatar(userId, avatarUrl, [callback, avatarUrl](bool dbSuccess) {
+        if (dbSuccess) {
+            callback(true, avatarUrl);
+        } else {
+            callback(false, "");
+        }
+    });
 }
 
 }

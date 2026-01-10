@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(64) PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
-    avatar_url VARCHAR(255),           -- 头像
+    avatar_url VARCHAR(255) DEFAULT '/public/defaults/default.png', -- 默认头像
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

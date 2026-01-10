@@ -1,5 +1,9 @@
 #include "UserController.h"
 
+#include <filesystem>
+
+#include "config_manager.h"
+
 UserController::UserController() {
     userService = std::make_shared<lepai::service::UserService>();
 }
@@ -95,5 +99,52 @@ void UserController::logoutUser(const drogon::HttpRequestPtr& req, std::function
         ret["message"] = "Logged out";
         auto resp = drogon::HttpResponse::newHttpJsonResponse(ret);
         callback(resp);
+    });
+}
+
+void UserController::updateAvatar(const drogon::HttpRequestPtr& req, std::function<void (const drogon::HttpResponsePtr &)> &&callback)
+{
+    // 直接从 Filter 注入的属性中获取 userId
+    std::string userId = req->attributes()->get<std::string>("userId");
+    
+    if (userId.empty()) {
+        auto resp = drogon::HttpResponse::newHttpResponse();
+        resp->setStatusCode(drogon::k401Unauthorized); // 双重保险
+        callback(resp);
+        return;
+    }
+
+    // 处理文件上传
+    drogon::MultiPartParser parser;
+    if (parser.parse(req) != 0 || parser.getFiles().empty()) {
+        auto resp = drogon::HttpResponse::newHttpResponse();
+        resp->setStatusCode(drogon::k400BadRequest);
+        resp->setBody("No file uploaded");
+        callback(resp);
+        return;
+    }
+
+    auto& file = parser.getFiles()[0];
+    std::string ext = std::filesystem::path(file.getFileName()).extension().string();
+    if(ext.empty()) ext = ".jpg";
+
+    // 保存临时文件
+    std::string tempPath = "/tmp/" + userId + "_avatar" + ext;
+    file.saveAs(tempPath);
+
+    userService->uploadAvatar(userId, tempPath, ext, [callback, tempPath](bool success, const std::string& url) {
+        // 清理临时文件
+        std::filesystem::remove(tempPath);
+
+        Json::Value ret;
+        if (success) {
+            ret["code"] = 200;
+            ret["message"] = "Avatar updated";
+            ret["avatar_url"] = url;
+        } else {
+            ret["code"] = 500;
+            ret["message"] = "Upload failed";
+        }
+        callback(drogon::HttpResponse::newHttpJsonResponse(ret));
     });
 }

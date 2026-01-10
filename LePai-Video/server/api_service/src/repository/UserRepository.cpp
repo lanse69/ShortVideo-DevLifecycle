@@ -56,5 +56,19 @@ void UserRepository::createUser(const lepai::entity::User& user, CreateCallback 
     );
 }
 
+void UserRepository::updateAvatar(const std::string& userId, const std::string& url, std::function<void(bool)> callback) 
+{
+    auto db = drogon::app().getDbClient("default");
+    db->execSqlAsync(
+        "UPDATE users SET avatar_url = $1 WHERE id = $2",
+        [callback](const drogon::orm::Result&){ callback(true); },
+        [callback](const drogon::orm::DrogonDbException& e){ 
+            LOG_ERROR << "Update avatar failed: " << e.base().what();
+            callback(false); 
+        },
+        url, userId
+    );
+}
+
 }
 }
