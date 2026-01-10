@@ -1,67 +1,41 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
-import LePaiClient
 
-Window {
-    width: 360
-    height: 640
+ApplicationWindow {
+    id: mainWindow
+
+    // 判断是否为移动设备
+    readonly property bool isMobile: Qt.platform.os === "android"
+
+    // 直接设置尺寸
+    width: isMobile ? Screen.width : 400   // 电脑固定宽度
+    height: isMobile ? Screen.height : 800  // 电脑固定高度
+
+    // 最小尺寸（防止窗口被缩得太小）
+    minimumWidth: isMobile ? Screen.width : 400
+    minimumHeight: isMobile ? Screen.height : 800
+
+
+    // 最大尺寸（防止窗口被缩得太大）
+    maximumWidth: isMobile ? Screen.width : 700
+    maximumHeight: isMobile ? Screen.height : 1300
     visible: true
-    title: qsTr("LePai Vision - Register")
+    title: qsTr("乐拍视界")
+    color: "black"
 
-    AuthManager {
-        id: authManager
-        
-        onRegistrationSuccess: {
-            statusLabel.color = "green"
-            statusLabel.text = "注册成功！"
-            console.log("Register OK")
-        }
-        
-        onRegistrationFailed: (message) => {
-            statusLabel.color = "red"
-            statusLabel.text = "注册失败: " + message
+    // 手机上启动后自动全屏
+    Component.onCompleted: {
+        if (isMobile) {
+            showFullScreen()
+        } else {
+            // 桌面居中显示
+            x = (Screen.width - width) / 2
+            y = (Screen.height - height) / 2
         }
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width * 0.8
-        spacing: 20
-
-        Text {
-            text: "注册"
-            font.pixelSize: 24
-            Layout.alignment: Qt.AlignHCenter
-        }
-
-        TextField {
-            id: usernameField
-            placeholderText: "用户名"
-            Layout.fillWidth: true
-        }
-
-        TextField {
-            id: passwordField
-            placeholderText: "密码"
-            echoMode: TextInput.Password
-            Layout.fillWidth: true
-        }
-        
-        Label {
-            id: statusLabel
-            visible: text !== ""
-            Layout.fillWidth: true
-        }
-
-        Button {
-            text: "提交"
-            Layout.fillWidth: true
-            onClicked: {
-                statusLabel.text = "提交中..."
-                statusLabel.color = "blue"
-                authManager.registerUser(usernameField.text, passwordField.text)
-            }
-        }
+    Content{
+        id:content
+        anchors.fill: parent
     }
 }
