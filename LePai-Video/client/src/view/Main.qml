@@ -1,67 +1,48 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
-import LePaiClient
 
-Window {
-    width: 360
-    height: 640
+ApplicationWindow {
+    id: mainWindow
+
+    // 判断是否为移动设备
+    readonly property bool isMobile: Qt.platform.os === "android" ||
+                                     Qt.platform.os === "ios"
+                                     // 移除重复的 tvos，如果是手机应用
+
+    // 移动设备：全屏
+    // 桌面设备：竖屏9:16比例，占屏幕合适比例
+
+    width: isMobile ?
+           // 手机：全屏
+           Screen.width :
+           // 电脑：竖屏9:16，宽度不超过屏幕的60%
+           Math.min(Screen.desktopAvailableWidth * 0.6,  // 最大宽度60%
+                   Screen.desktopAvailableHeight * 0.9 * (9/16))  // 按高度计算宽度
+
+    height: isMobile ?
+            // 手机：全屏
+            Screen.height :
+            // 电脑：竖屏9:16，高度基于宽度计算
+            width * (16/9)  // 注意：width已经在上面的表达式计算好了
+
     visible: true
-    title: qsTr("LePai Vision - Register")
+    title: qsTr("乐拍视界")
+    color: "black"
 
-    AuthManager {
-        id: authManager
-        
-        onRegistrationSuccess: {
-            statusLabel.color = "green"
-            statusLabel.text = "注册成功！"
-            console.log("Register OK")
-        }
-        
-        onRegistrationFailed: (message) => {
-            statusLabel.color = "red"
-            statusLabel.text = "注册失败: " + message
+    // 手机上启动后自动全屏
+    Component.onCompleted: {
+        if (isMobile) {
+            showFullScreen()
+        } else {
+            // 桌面居中显示
+            x = (Screen.width - width) / 2
+            y = (Screen.height - height) / 2
         }
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        width: parent.width * 0.8
-        spacing: 20
-
-        Text {
-            text: "注册"
-            font.pixelSize: 24
-            Layout.alignment: Qt.AlignHCenter
-        }
-
-        TextField {
-            id: usernameField
-            placeholderText: "用户名"
-            Layout.fillWidth: true
-        }
-
-        TextField {
-            id: passwordField
-            placeholderText: "密码"
-            echoMode: TextInput.Password
-            Layout.fillWidth: true
-        }
-        
-        Label {
-            id: statusLabel
-            visible: text !== ""
-            Layout.fillWidth: true
-        }
-
-        Button {
-            text: "提交"
-            Layout.fillWidth: true
-            onClicked: {
-                statusLabel.text = "提交中..."
-                statusLabel.color = "blue"
-                authManager.registerUser(usernameField.text, passwordField.text)
-            }
-        }
+    // Content Area
+    Content {
+        id: content
+        anchors.fill: parent
     }
 }

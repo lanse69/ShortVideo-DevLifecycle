@@ -21,8 +21,31 @@ qt_add_qml_module(appLePaiClient
         src/ConfigManager.cpp
         src/model/AuthManager.h
         src/model/AuthManager.cpp
+        src/model/browsevideosmodelview.h
+        src/model/browsevideosmodelview.cpp
+
+        src/model/videomodel.h
+        src/model/videomodel.cpp
+
     QML_FILES
         src/view/Main.qml
+        src/view/Content.qml
+        src/view/BottomBar.qml
+        src/view/HomeTab.qml
+        src/view/HomeTopBar.qml
+        src/view/HomeVideoArea.qml
+        src/view/FriendsTab.qml
+        src/view/FriendTopBar.qml
+        src/view/FriendVideoArea.qml
+        src/view/PostVideoTab.qml
+        src/view/ProfileTab.qml
+        src/view/ProfileLikes.qml
+        src/view/ProfileWroks.qml
+        src/view/HomeFollowPage.qml
+        src/view/CaptureUploadPage.qml
+        src/view/EditPage.qml
+        src/view/PublishPage.qml
+        src/view/VideoPlayWindow.qml
 )
 
 target_include_directories(appLePaiClient PRIVATE
