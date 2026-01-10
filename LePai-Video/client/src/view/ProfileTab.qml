@@ -12,6 +12,7 @@ RowLayout会认为自己应该填满可用高度！它忽略了外层的 Layout.
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 Rectangle {
     id: _profileRectangle
@@ -20,6 +21,38 @@ Rectangle {
     color: "#000000"
 
     property int currentProfileTab: 0
+    property bool showLoginPage: true  // 控制登录页面显示
+    // 新增：登录页面（半透明覆盖层）
+     Rectangle {
+         id: loginOverlay
+         anchors.fill: parent
+         color: "#80000000"  // 半透明黑色背景
+         visible: showLoginPage
+         z: 100  // 确保在最上层
+
+         // 登录页面内容 - 调整为更合适的手机比例
+         LoginPage {
+             id: loginPage
+             width: Math.min(parent.width * 0.85, 400)  // 更宽一些，适合手机
+             height: Math.min(parent.height * 0.7, 600)  // 更高一些
+             anchors.centerIn: parent
+             radius: 15  // 圆角
+
+             // 使LoginPage背景为白色
+             color: "white"
+
+             onLoginSuccess: {
+                 console.log("登录成功")
+                 showLoginPage = false
+             }
+
+             onCloseRequested: {
+                 console.log("关闭登录页面")
+                 showLoginPage = false
+             }
+          }
+     }
+
     // 个人主页 - 四行布局
     ColumnLayout {
         anchors.fill: parent
@@ -162,26 +195,6 @@ Rectangle {
                     onTapped: console.log("编辑个人信息")
                 }
             }
-
-            // // 加好友按钮
-            // Rectangle {
-            //     Layout.preferredWidth: 0  // 让两个按钮等宽
-            //     Layout.fillWidth: true
-            //     Layout.preferredHeight: 40
-            //     color: "#FF0050"
-            //     radius: 5
-
-            //     Text {
-            //         text: "加好友"
-            //         color: "#FFFFFF"
-            //         font.pixelSize: 16
-            //         anchors.centerIn: parent
-            //     }
-
-            //     TapHandler {
-            //         onTapped: console.log("加好友")
-            //     }
-            // }
         }
 
         // 第三行：作品、推荐、喜欢按钮行 - 固定高度
@@ -225,39 +238,6 @@ Rectangle {
                     }
                 }
             }
-
-            // // 收藏按钮
-            // Rectangle {
-            //     Layout.fillWidth: true
-            //     Layout.preferredHeight: 40
-            //     color: "transparent"
-
-            //     Text {
-            //         text: "收藏"
-            //         color: tabRow.selectedIndex === 1 ? "#FFFFFF" : "#AAAAAA"
-            //         font.pixelSize: 16
-            //         font.bold: tabRow.selectedIndex === 1
-            //         anchors.centerIn: parent
-            //     }
-
-            //     // 底部红线
-            //     Rectangle {
-            //         width: parent.width
-            //         height: 2
-            //         color: "#FF0050"
-            //         anchors.bottom: parent.bottom
-            //         visible: tabRow.selectedIndex === 1
-            //     }
-
-            //     TapHandler {
-            //         onTapped: {
-            //             console.log("切换到推荐")
-            //             tabRow.selectedIndex = 1
-            //             currentProfileTab = 1
-            //         }
-            //     }
-            // }
-
             // 喜欢按钮
             Rectangle {
                 Layout.fillWidth: true

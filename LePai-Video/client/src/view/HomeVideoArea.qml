@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Layouts
-import LePaiClient
 
 // 视频内容区域
 Rectangle {
@@ -9,29 +8,28 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
-    BrowseVideosModelView {
-        id: browseVideosModelView
-        onVideosLoaded: {
-            console.log("收到视频数据，数量:", videoList.length);
-            // 将新视频添加到ListModel
-            for (var i = 0; i < videoList.length; i++) {
-                var video = videoList[i];
-                videoListModel.append({
-                    "videoId": video.id,            // 使用 id 字段
-                    //"userId": video.userId,         // 可能为空
-                    "title": video.title,
-                    "url": video.url,
-                    "likeCount": video.likeCount,
-                    "coverUrl": video.coverUrl,     // 使用 coverUrl 字段
-                    "description": video.title,     // 描述可以用标题替代，因为没有description字段
-                    //"createdAt": video.createdAt,   // 可能为空
-                    "authorName": video.authorName, // 作者名
-                    "authorAvatar": video.authorAvatar // 作者头像
-                });
-            }
-        }
-        onVideosRequestFailed:{
-            console.log("加载视频失败:", errorMessage);
+    Item {
+        id: broseVideoViewModel
+
+        function getVideos()
+        {
+             return [
+                {
+                    title:"zhoujun",
+                    url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+                    description:"1111"
+                },
+                {
+                    title :"zhu",
+                    url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+                    description:"2"
+                },
+                {
+                    title :"a",
+                    url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
+                    description:"3"
+                },
+            ]
         }
     }
 
@@ -46,19 +44,29 @@ Rectangle {
 
         // 滑到底部提示
         property bool atBottomEnd: false
-
         onMovementEnded: {
             // 检查是否滑到底部
             if (contentY + height > contentHeight - 50) {
-                browseVideosModelView.requestVideos();
+                listModel.getVideos()
             }
         }
+
 
         // 视频数据模型
         model: ListModel {
             id:listModel
             Component.onCompleted: {
-                browseVideosModelView.requestVideos();
+                getVideos()
+            }
+            function getVideos(){
+                var videos = broseVideoViewModel.getVideos()
+                for(let i = 0; i < videos.length; i++) {
+                    append({
+                               "title": videos[i].title,
+                               "source": videos[i].url,
+                               "description": videos[i].description
+                           })
+                }
             }
         }
 
@@ -66,6 +74,7 @@ Rectangle {
             id: videoItem
             width: videoListView.width
             height: videoListView.height
+
 
             // 透明度控制
             property real avatarOpacity: 1.0
@@ -85,12 +94,12 @@ Rectangle {
             Rectangle {
                 id: videoBg
                 anchors.fill: parent
-
+                //color: bgColor
                 VideoPlayWindow {
                     id: currentPlayer
                     width: videoListView.width
                     height: videoListView.height
-                    playerSource:model.url
+                    playerSource:model.source
                     property bool shouldPlay: index==videoListView.currentIndex && videoListView.visible
                     onShouldPlayChanged: {
                         if (shouldPlay) {
@@ -267,7 +276,7 @@ Rectangle {
                     // 用户名
                     Text {
                         id: usernameText
-                        text: authorName
+                        //text: username
                         color: "#FFFFFF"
                         font.pixelSize: 16
                         font.bold: true
@@ -277,7 +286,7 @@ Rectangle {
                     // 视频描述
                     Text {
                         id: descriptionText
-                        text: model.title//
+                        text: description
                         color: "#FFFFFF"
                         font.pixelSize: 14
                         Layout.maximumWidth: 280

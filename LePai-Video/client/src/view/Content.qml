@@ -4,7 +4,7 @@ import QtQuick.Layouts
 Item {
     id: contentRoot
 
-    // 当前底部Tab：0=首页，1=朋友，2=创建作品，3=个人空间
+    // 当前底部Tab：0=首页，1=创建作品，2=个人空间
     property int currentTab: 0
 
     // 主列排列 - 整个页面垂直布局
@@ -23,13 +23,13 @@ Item {
                 if (currentTab === 0) {
                     return _homeTab
                 }
+                // if (currentTab === 1) {
+                //     return _friendTab
+                // }
                 if (currentTab === 1) {
-                    return _friendTab
-                }
-                if (currentTab === 2) {
                     return _postVideoTab
                 }
-                if (currentTab === 3) {
+                if (currentTab === 2) {
                     return _profileTab
                 }
             }
@@ -57,14 +57,14 @@ Item {
             }
         }
 
-        // 朋友页面
-        Component {
-            id: _friendTab
-            FriendsTab {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-            }
-        }
+        // // 朋友页面
+        // Component {
+        //     id: _friendTab
+        //     FriendsTab {
+        //         Layout.fillWidth: true
+        //         Layout.fillHeight: true
+        //     }
+        // }
 
         // 发视频页面
         Component {

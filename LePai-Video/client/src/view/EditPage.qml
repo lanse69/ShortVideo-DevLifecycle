@@ -13,9 +13,6 @@ Rectangle {
     property var selectedMusic: null
     property bool musicSelectorVisible: false
 
-    // 屏幕宽度，用于自适应
-    property int screenWidth: parent ? parent.width : 375
-
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -30,20 +27,20 @@ Rectangle {
                 anchors.centerIn: parent
                 text: "视频预览区域"
                 color: "white"
-                font.pixelSize: screenWidth * 0.05
+                font.pixelSize: parent.width * 0.05  // 使用 parent.width
             }
         }
 
         // 底部控制区域
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: screenWidth * 0.25  // 25%宽度
+            Layout.preferredHeight: parent.height * 0.25  // 使用 parent.height
             color: "#000000"
             z: 10
 
             RowLayout {
                 anchors.fill: parent
-                spacing: screenWidth * 0.05
+                spacing: parent.width * 0.05  // 使用 parent.width
 
                 // 左边填充
                 Item {
@@ -52,8 +49,8 @@ Rectangle {
 
                 // 选择音乐按钮
                 Button {
-                    Layout.preferredWidth: screenWidth * 0.4
-                    Layout.preferredHeight: screenWidth * 0.12
+                    Layout.preferredWidth: Math.min(parent.width * 0.4, 200)  // 限制最大宽度
+                    Layout.preferredHeight: Math.min(parent.width * 0.12, 50)
                     background: Rectangle {
                         color: "#666666"
                         radius: height / 2
@@ -61,7 +58,7 @@ Rectangle {
                     contentItem: Text {
                         text: selectedMusic ? "已选音乐" : "选择音乐"
                         color: "white"
-                        font.pixelSize: screenWidth * 0.035
+                        font.pixelSize: Math.max(15, parent.width * 0.04)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         anchors.centerIn: parent
@@ -76,8 +73,8 @@ Rectangle {
 
                 // 下一步按钮
                 Button {
-                    Layout.preferredWidth: screenWidth * 0.4
-                    Layout.preferredHeight: screenWidth * 0.12
+                    Layout.preferredWidth: Math.min(parent.width * 0.4, 200)
+                    Layout.preferredHeight: Math.min(parent.width * 0.12, 50)
                     background: Rectangle {
                         color: "#FF2C5C"
                         radius: height / 2
@@ -85,7 +82,7 @@ Rectangle {
                     contentItem: Text {
                         text: "下一步"
                         color: "white"
-                        font.pixelSize: screenWidth * 0.035
+                        font.pixelSize: Math.max(15, parent.width * 0.04)
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         anchors.centerIn: parent
@@ -125,26 +122,26 @@ Rectangle {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: screenWidth * 0.05
-            spacing: screenWidth * 0.03
+            anchors.margins: Math.min(parent.width * 0.05, 20)
+            spacing: Math.min(parent.width * 0.03, 10)
 
             // 标题行
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: screenWidth * 0.1
+                Layout.preferredHeight: Math.min(parent.width * 0.1, 40)
 
                 Text {
                     text: "选择音乐"
                     color: "white"
-                    font.pixelSize: screenWidth * 0.045
+                    font.pixelSize: Math.max(16, parent.width * 0.045)
                     font.bold: true
                     Layout.alignment: Qt.AlignHCenter
                     Layout.fillWidth: true
                 }
 
                 Button {
-                    Layout.preferredWidth: screenWidth * 0.1
-                    Layout.preferredHeight: screenWidth * 0.1
+                    Layout.preferredWidth: Math.min(parent.width * 0.1, 30)
+                    Layout.preferredHeight: Math.min(parent.width * 0.1, 30)
                     text: "×"
                     background: Rectangle {
                         color: "transparent"
@@ -152,7 +149,7 @@ Rectangle {
                     contentItem: Text {
                         text: parent.text
                         color: "white"
-                        font.pixelSize: screenWidth * 0.045
+                        font.pixelSize: Math.max(16, parent.width * 0.045)
                         font.bold: true
                     }
                     onClicked: musicSelectorVisible = false
@@ -168,7 +165,7 @@ Rectangle {
                     id: musicListView
                     model: musicModel
                     delegate: musicItemDelegate
-                    spacing: screenWidth * 0.02
+                    spacing: Math.min(parent.width * 0.02, 8)
                 }
             }
         }
@@ -216,40 +213,40 @@ Rectangle {
 
         Button {
             width: musicListView.width
-            height: screenWidth * 0.2
+            height: Math.min(musicListView.width * 0.2, 80)
             background: Rectangle {
                 color: selected ? "#222222" : "#111111"
-                radius: screenWidth * 0.02
+                radius: Math.min(width * 0.05, 8)
                 border.color: selected ? "#FF2C5C" : "transparent"
                 border.width: 2
             }
             contentItem: RowLayout {
                 anchors.fill: parent
-                anchors.margins: screenWidth * 0.03
+                anchors.margins: Math.min(parent.width * 0.03, 10)
 
                 Rectangle {
-                    Layout.preferredWidth: screenWidth * 0.12
-                    Layout.preferredHeight: screenWidth * 0.12
-                    radius: screenWidth * 0.015
+                    Layout.preferredWidth: Math.min(parent.width * 0.12, 40)
+                    Layout.preferredHeight: Math.min(parent.width * 0.12, 40)
+                    radius: Math.min(width * 0.2, 6)
                     color: "#333333"
 
                     Text {
                         anchors.centerIn: parent
                         text: "♪"
                         color: "white"
-                        font.pixelSize: screenWidth * 0.05
+                        font.pixelSize: Math.max(14, parent.width * 0.3)
                     }
                 }
 
                 Column {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    spacing: screenWidth * 0.01
+                    spacing: Math.min(parent.width * 0.01, 4)
 
                     Text {
                         text: name
                         color: "white"
-                        font.pixelSize: screenWidth * 0.035
+                        font.pixelSize: Math.max(14, parent.width * 0.035)
                         font.bold: true
                         elide: Text.ElideRight
                     }
@@ -257,13 +254,13 @@ Rectangle {
                     Text {
                         text: author + " · " + duration
                         color: "#AAAAAA"
-                        font.pixelSize: screenWidth * 0.03
+                        font.pixelSize: Math.max(12, parent.width * 0.03)
                     }
                 }
 
                 Rectangle {
-                    Layout.preferredWidth: screenWidth * 0.07
-                    Layout.preferredHeight: screenWidth * 0.07
+                    Layout.preferredWidth: Math.min(parent.width * 0.07, 25)
+                    Layout.preferredHeight: Math.min(parent.width * 0.07, 25)
                     radius: width / 2
                     color: selected ? "#FF2C5C" : "#555555"
 
@@ -271,7 +268,7 @@ Rectangle {
                         anchors.centerIn: parent
                         text: selected ? "✓" : ""
                         color: "white"
-                        font.pixelSize: screenWidth * 0.035
+                        font.pixelSize: Math.max(12, parent.width * 0.3)
                         font.bold: true
                     }
                 }
@@ -300,7 +297,7 @@ Rectangle {
     Button {
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.margins: screenWidth * 0.05
+        anchors.margins: Math.min(parent.width * 0.05, 20)
         text: "← 返回"
         background: Rectangle {
             color: "transparent"
@@ -308,7 +305,7 @@ Rectangle {
         contentItem: Text {
             text: parent.text
             color: "white"
-            font.pixelSize: screenWidth * 0.04
+            font.pixelSize: Math.max(14, parent.width * 0.04)
         }
         onClicked: root.backRequested()
     }

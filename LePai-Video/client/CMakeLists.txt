@@ -34,9 +34,6 @@ qt_add_qml_module(appLePaiClient
         src/view/HomeTab.qml
         src/view/HomeTopBar.qml
         src/view/HomeVideoArea.qml
-        src/view/FriendsTab.qml
-        src/view/FriendTopBar.qml
-        src/view/FriendVideoArea.qml
         src/view/PostVideoTab.qml
         src/view/ProfileTab.qml
         src/view/ProfileLikes.qml
@@ -46,6 +43,9 @@ qt_add_qml_module(appLePaiClient
         src/view/EditPage.qml
         src/view/PublishPage.qml
         src/view/VideoPlayWindow.qml
+        QML_FILES src/view/LoginPage.qml
+        QML_FILES src/view/Player.qml
+        QML_FILES src/view/RegisterPage.qml
 )
 
 target_include_directories(appLePaiClient PRIVATE
