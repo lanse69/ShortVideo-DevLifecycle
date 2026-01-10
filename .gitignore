@@ -86,3 +86,6 @@ cmake-build-*/
 
 LePai-Video/server/config/config.json
 LePai-Video/client/config/config.json
+
+LePai-Video/infrastructure/docker-compose.yml
+LePai-Video/infrastructure/nginx_cdn/nginx.conf
