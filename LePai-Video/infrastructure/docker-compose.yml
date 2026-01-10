@@ -14,6 +14,7 @@ services:
       POSTGRES_USER: lepai_admin
       POSTGRES_PASSWORD: lepai_password
       POSTGRES_DB: lepai_db
+      TZ: Asia/Shanghai
     command: >
       postgres 
       -c wal_level=replica 
@@ -26,6 +27,8 @@ services:
     volumes:
       - ./sql:/docker-entrypoint-initdb.d
       - pg_master_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - lepai_net
     healthcheck:
@@ -44,6 +47,7 @@ services:
         condition: service_healthy
     environment:
       PGPASSWORD: lepai_repl_pass
+      TZ: Asia/Shanghai
     command: >
       bash -c "
       if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
@@ -57,6 +61,8 @@ services:
       - "5433:5432"
     volumes:
       - pg_slave_data:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - lepai_net
 
@@ -65,10 +71,14 @@ services:
     image: redis:7
     container_name: lepai_redis
     profiles: ["infra"]
+    environment:
+      TZ: Asia/Shanghai
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     networks:
       - lepai_net
 
@@ -81,11 +91,14 @@ services:
     environment:
       MINIO_ROOT_USER: lepai_minio
       MINIO_ROOT_PASSWORD: lepai_minio_pass
+      TZ: Asia/Shanghai
     ports:
       - "9000:9000"
       - "9001:9001"
     volumes:
       - minio_data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro 
     networks:
       - lepai_net
 
@@ -97,10 +110,13 @@ services:
     image: nginx:alpine
     container_name: lepai_gateway
     profiles: ["gateway"]
+    environment:
+      TZ: Asia/Shanghai
     ports:
       - "8000:80"  # 占用 PC-2 的 80 端口，转发给 8080
     volumes:
       - ./nginx_gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/localtime:/etc/localtime:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -114,6 +130,8 @@ services:
     image: nginx:alpine
     container_name: lepai_cdn
     profiles: ["cdn"]
+    environment:
+      TZ: Asia/Shanghai
     ports:
       - "8001:80"
     volumes:
@@ -121,6 +139,7 @@ services:
       - ./nginx_cdn/nginx.conf:/etc/nginx/nginx.conf:ro
       # 映射缓存目录
       - ./nginx_cache:/var/cache/nginx
+      - /etc/localtime:/etc/localtime:ro
     extra_hosts:
       # 注入 PC-1 的 IP，供 Nginx 内部反向代理使用
       - "minio_host:10.137.154.19"
