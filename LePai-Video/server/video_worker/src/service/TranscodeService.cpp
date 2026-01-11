@@ -197,6 +197,16 @@ void TranscodeService::processTask(const std::string& videoId)
         
         LOG_INFO << "Success! Video URL: " << finalVideoUrl;
         repository->markAsPublished(videoId, finalCoverUrl, duration, finalVideoUrl);
+    
+        // 清理 Temp 桶中的原始视频
+        std::string tempObjectKey = videoId + ".mp4";
+        LOG_INFO << "Cleaning up temp file: " << tempObjectKey;
+        
+        if (storage->removeFile("temp", tempObjectKey)) {
+            LOG_INFO << "Temp file deleted successfully.";
+        } else {
+            LOG_WARN << "Failed to delete temp file (it may be cleaned up by lifecycle policy later).";
+        }
     } else {
         LOG_ERROR << "Upload failed due to network errors.";
         repository->markAsFailed(videoId);

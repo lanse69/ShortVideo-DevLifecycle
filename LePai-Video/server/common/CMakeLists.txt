@@ -5,10 +5,14 @@ add_library(lepai_common STATIC
     src/MinioClient.cpp 
 )
 
+find_package(OpenSSL REQUIRED)
+
 # 链接依赖
 target_link_libraries(lepai_common PUBLIC 
     Drogon::Drogon
     JsonCpp::JsonCpp
+    OpenSSL::SSL 
+    OpenSSL::Crypto
 )
 
 # 对外暴露头文件路径
