@@ -9,6 +9,9 @@
 #include <QUrlQuery>
 #include <QFile>
 #include <QString>
+#include <QFileInfo>
+#include <QMimeDatabase>
+#include <QMimeType>
 
 NetworkClient::NetworkClient(QObject *parent):QObject(parent) {
     m_networkManager = new QNetworkAccessManager(this);
@@ -178,29 +181,58 @@ void NetworkClient::requestVideos(int offset, int limit,
 void NetworkClient::uploadVideoFile(const QString &filePath, const QString &uuid,
                                     std::function<void(bool success, QString error, QString uploadUrl)> callback)
 {
+    QFileInfo fileInfo(filePath);
+    if (!fileInfo.exists()) {
+        if (callback) callback(false, "文件不存在", "");
+        return;
+    }
+
+    QString extension = fileInfo.suffix();
+    if (extension.isEmpty()) extension = "mp4"; // 默认兜底
+
     // 构造上传 URL
-    QString uploadUrl = QString("%1/temp/%2.mp4").arg(m_uploadEndpoint).arg(uuid);
-    qDebug() << "[NetworkClient] 上传URL:" << uploadUrl;
+    QString uploadUrl = QString("%1/temp/%2.%3").arg(m_uploadEndpoint).arg(uuid).arg(extension);
+
+    // 识别 MIME Type
+    QMimeDatabase db;
+    QMimeType mime = db.mimeTypeForFile(filePath);
+    QString contentType = mime.name();
+    if (contentType.isEmpty()) contentType = "application/octet-stream";
+
+    qDebug() << "[NetworkClient] 准备上传:" << filePath;
+    qDebug() << "[NetworkClient] 目标URL:" << uploadUrl;
+    qDebug() << "[NetworkClient] MIME:" << contentType;
 
     QFile *file = new QFile(filePath);
     if (!file->open(QIODevice::ReadOnly)) {
         QString error = "无法打开视频文件";
-        qDebug() << "[NetworkClient] 上传失败:" << error;
-        file->deleteLater();
+        qDebug() << "[NetworkClient] 错误:" << error;
+        delete file;
         if (callback) callback(false, error, "");
         return;
     }
 
     QNetworkRequest request{QUrl(uploadUrl)};
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "video/mp4");
+    request.setHeader(QNetworkRequest::ContentTypeHeader, contentType);
+    
+    // Content-Length
     request.setHeader(QNetworkRequest::ContentLengthHeader, file->size());
 
+    // 发送 PUT 请求
     QNetworkReply *reply = m_networkManager->put(request, file);
+
+    // 资源管理绑定：当 reply销毁时，自动关闭并删除 file
     file->setParent(reply);
 
     connect(reply, &QNetworkReply::finished, [reply, callback, uploadUrl]() {
         bool success = (reply->error() == QNetworkReply::NoError);
         QString error = success ? "" : reply->errorString();
+
+        if (!success) {
+            qDebug() << "[NetworkClient] 上传失败:" << error;
+        } else {
+            qDebug() << "[NetworkClient] 上传成功";
+        }
 
         if (callback) {
             callback(success, error, uploadUrl);

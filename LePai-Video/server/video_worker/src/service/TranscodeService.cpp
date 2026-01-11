@@ -199,7 +199,16 @@ void TranscodeService::processTask(const std::string& videoId)
         repository->markAsPublished(videoId, finalCoverUrl, duration, finalVideoUrl);
     
         // 清理 Temp 桶中的原始视频
-        std::string tempObjectKey = videoId + ".mp4";
+        // 从 URL 中提取文件名 (uuid.mov)
+        std::string tempObjectKey;
+        size_t lastSlash = rawVideoUrl.find_last_of('/');
+        if (lastSlash != std::string::npos) {
+            tempObjectKey = rawVideoUrl.substr(lastSlash + 1);
+        } else {
+            // 兜底：如果解析失败，尝试删 mp4
+            tempObjectKey = videoId + ".mp4";
+        }
+
         LOG_INFO << "Cleaning up temp file: " << tempObjectKey;
         
         if (storage->removeFile("temp", tempObjectKey)) {
