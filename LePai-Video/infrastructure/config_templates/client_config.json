@@ -1,7 +1,5 @@
 {
     "api_server_url": "http://{{PC2_IP}}:8000",
     "cdn_server_url": "http://{{PC3_IP}}:8001",
-    "upload_endpoint": "http://{{PC1_IP}}:9000",
-    "minio_user": "lepai_minio",
-    "minio_password": "lepai_minio_pass"
+    "upload_endpoint": "http://{{PC1_IP}}:9000"
 }
