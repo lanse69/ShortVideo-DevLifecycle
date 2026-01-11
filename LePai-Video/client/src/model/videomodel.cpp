@@ -38,7 +38,8 @@ VideoModel VideoModel::fromJson(const QJsonObject &json) {
     video.m_authorAvatar = json["author_avatar"].toString();  // 服务端返回的是 author_avatar
     video.m_isLiked = json["is_liked"].toBool();  // 注意字段名映射
     video.m_isFollowed=json["is_followed"].toBool();
-
+    qDebug() <<"fromJson m_isLiked:" <<video.m_isLiked;
+    qDebug() <<"fromJson m_likeCount:" <<video.m_likeCount;
     // 注意：服务端返回的JSON中没有userId和createdAt字段
     // 这些字段在服务端的Video结构体中有，但toJson()方法没有包含它们
     // 所以这里我们留空或设置为默认值
@@ -77,6 +78,8 @@ QVariantMap VideoModel::toVariantMap() const {
     map["authorAvatar"] = m_authorAvatar;
     map["isLiked"] = m_isLiked;
     map["isFollowed"] = m_isFollowed;
+    qDebug()<<"toVariantMap m_likeCount:" <<m_likeCount;
+    qDebug()<<"toVariantMap m_isLiked:" <<m_isLiked;
 
     return map;
 }

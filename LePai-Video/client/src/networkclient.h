@@ -22,6 +22,8 @@ public:
                           std::function<void(bool success, QString error, QString uploadUrl)> callback);
     void submitPublishTask(const QString &title, const QString &videoUrl, const QString &token,
                            std::function<void(bool success, QJsonObject response)> callback);
+    void likeVideo(const QString &videoId, bool action, const QString &token,
+                   std::function<void(bool success, int likeCount, QString error)> callback);
 
     QString m_apiBaseUrl;
     QString m_cdnServerUrl;

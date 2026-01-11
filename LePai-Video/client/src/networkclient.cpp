@@ -296,3 +296,49 @@ void NetworkClient::submitPublishTask(const QString &title, const QString &video
         reply->deleteLater();
     });
 }
+
+void NetworkClient::likeVideo(const QString &videoId, bool action, const QString &token,
+                              std::function<void(bool success, int likeCount, QString error)> callback)
+{
+    QUrl url(m_apiBaseUrl + "/api/video/like");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QJsonObject json;
+    json["video_id"] = videoId;
+    json["action"] = action;
+    QByteArray data = QJsonDocument(json).toJson();
+
+    qDebug() << "[NetworkClient] 发送点赞请求，videoId:" << videoId << "action:" << action;
+
+    QNetworkReply *reply = m_networkManager->post(request, data);
+
+    connect(reply, &QNetworkReply::finished, [reply, callback]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray respData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(respData);
+
+            if (!doc.isNull()) {
+                QJsonObject obj = doc.object();
+                int code = obj["code"].toInt();
+
+                if (code == 200) {
+                    int likeCount = obj["like_count"].toInt();
+                    if (callback) callback(true, likeCount, "");
+                } else {
+                    QString error = obj["message"].toString("未知错误");
+                    if (callback) callback(false, 0, error);
+                }
+            } else {
+                if (callback) callback(false, 0, "响应格式错误");
+            }
+        } else {
+            QString error = reply->errorString();
+            if (callback) callback(false, 0, error);
+        }
+
+        reply->deleteLater();
+    });
+}
+

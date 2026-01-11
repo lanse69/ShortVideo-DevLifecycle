@@ -8,32 +8,6 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
-    // Item {
-    //     id: broseVideoViewModel
-
-    //     function getVideos()
-    //     {
-    //          return [
-    //             {
-    //                 title:"zhoujun",
-    //                 url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"1111"
-    //             },
-    //             {
-    //                 title :"zhu",
-    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"2"
-    //             },
-    //             {
-    //                 title :"a",
-    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"3"
-    //             },
-    //         ]
-    //     }
-    // }
-
-
     BrowseVideosModelView {
         id: browseVideosModelView
         onVideosLoaded: (videoList)=>{
@@ -43,13 +17,13 @@ Rectangle {
                 var video = videoList[i];
                 listModel.append({
                     "videoId": video.id,            // 使用 id 字段
-                    //"userId": video.userId,         // 可能为空
+                    //"userId": video.userId,         // 为空
                     "title": video.title,
                     "url": video.url,
                     "likeCount": video.likeCount,
                     "coverUrl": video.coverUrl,     // 使用 coverUrl 字段
-                    "description": video.title,     // 描述可以用标题替代，因为没有description字段
-                    //"createdAt": video.createdAt,   // 可能为空
+                    "description": video.title,     // 替代description字段
+                    //"createdAt": video.createdAt,   // 为空
                     "authorName": video.authorName, // 作者名
                     "authorAvatar": video.authorAvatar ,// 作者头像
                     "isFollowed":video.isFollowed,
@@ -60,6 +34,21 @@ Rectangle {
         }
         onVideosRequestFailed:{
             console.log("加载视频失败:", errorMessage);
+        }
+        onLikeStatusChanged: (videoId, isLiked, likeCount) => {
+                console.log("点赞状态变化，视频:", videoId, "点赞状态:", isLiked, "点赞数:", likeCount);
+
+                // 更新 ListModel 中对应的视频项
+                for (var i = 0; i < listModel.count; i++) {
+                    if (listModel.get(i).videoId === videoId) {
+                        listModel.setProperty(i, "isLiked", isLiked);
+                        listModel.setProperty(i, "likeCount", likeCount);
+                        console.log("更新视频", videoId, "点赞数:", likeCount, "点赞状态:", isLiked);
+                    }
+                }
+            }
+        onLikeFailed: (videoId, errorMessage) => {
+            console.log("点赞失败，视频:", videoId, "错误:", errorMessage);
         }
     }
 
@@ -76,10 +65,6 @@ Rectangle {
         // 滑到底部提示
         property bool atBottomEnd: false
         onMovementEnded: {
-            // // 检查是否滑到底部
-            // if (contentY + height > contentHeight - 50) {
-            //     listModel.getVideos()
-            // }
             if (contentY + height > contentHeight - 50) {
                 browseVideosModelView.requestVideos();
             }
@@ -92,23 +77,6 @@ Rectangle {
                 browseVideosModelView.requestVideos();
             }
         }
-
-        //     ListModel {
-        //     id:listModel
-        //     Component.onCompleted: {
-        //         getVideos()
-        //     }
-        //     function getVideos(){
-        //         var videos = broseVideoViewModel.getVideos()
-        //         for(let i = 0; i < videos.length; i++) {
-        //             append({
-        //                        "title": videos[i].title,
-        //                        "source": videos[i].url,
-        //                        "description": videos[i].description
-        //                    })
-        //         }
-        //     }
-        // }
 
         delegate: Item {
             id: videoItem
@@ -257,8 +225,8 @@ Rectangle {
 
                         Text {
                             id: loveText
-                            text: "❤️"
-                            color: "#FF0050"  // 红色表示已喜欢
+                            text: model.isLiked ? "❤️" : "🤍"
+                            color: model.isLiked ? "#FF0050" : "#FFFFFF"
                             font.pixelSize: 40
                             Layout.alignment: Qt.AlignHCenter
                             opacity: videoItem.avatarOpacity
@@ -266,10 +234,20 @@ Rectangle {
                             // 点击事件
                             TapHandler {
                                 onTapped: {
-                                    if (loveText.text === "❤️"){ loveText.text = "🤍"}
-                                        else loveText.text = "❤️"
+                                    var videoId = model.videoId;
+                                    var currentLiked = model.isLiked;
+                                    var newAction = !currentLiked;  // 取反：点赞变取消，取消变点赞
+
+                                    // 从 AuthManager 获取 token
+                                    var token = authManager.getToken();
+
+                                    // 调用点赞方法
+                                    browseVideosModelView.likeVideo(videoId, newAction, token);
+
                                     // 添加点击动画
-                                    lovefollowAnimation.start()
+                                    lovefollowAnimation.start();
+
+                                    console.log("点击点赞，视频ID:", videoId, "新状态:", newAction);
                                 }
                             }
                             // 点赞/取消关注动画

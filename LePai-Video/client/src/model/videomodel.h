@@ -18,6 +18,12 @@ public:
 
     QString getVideoId() { return m_id; }
 
+    bool isLiked() const { return m_isLiked; }
+    void setLiked(bool liked) { m_isLiked = liked;  }
+
+    int likeCount() const { return m_likeCount; }
+    void setLikeCount(int count) { m_likeCount = count; }
+
 private:
     QString m_id;            // 对应服务端 id
     //QString m_userId;        // 对应服务端 userId

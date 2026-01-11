@@ -23,9 +23,9 @@ void BrowseVideosModelView::requestVideos()
 
     // 使用 NetworkClient 发送请求
     NetworkClient::instance().requestVideos(m_nextOffset, 3,
-        [this](bool success, QJsonObject response) {
-            this->handleVideosResponse(success, response);
-        });
+                                            [this](bool success, QJsonObject response) {
+                                                this->handleVideosResponse(success, response);
+                                            });
 }
 
 void BrowseVideosModelView::handleVideosResponse(bool success, const QJsonObject &response)
@@ -130,4 +130,73 @@ void BrowseVideosModelView::parseVideoData(const QByteArray &data) {
         qDebug() << "[BrowseVideos] 成功加载" << videoVariantList.size() << "个视频";
         emit videosLoaded(videoVariantList);
     }
+}
+
+void BrowseVideosModelView::likeVideo(const QString &videoId, bool action, const QString &token)
+{
+    // 直接检查传入的token
+    if (token.isEmpty()) {
+        emit likeFailed(videoId, "用户未登录");
+        return;
+    }
+
+    // 乐观更新：立即更新本地状态
+    if (m_videoMap.contains(videoId)) {
+        VideoModel &video = m_videoMap[videoId];
+        bool wasLiked = video.isLiked();
+        int currentLikes = video.likeCount();
+
+        // 更新本地状态
+        video.setLiked(action);
+
+        // 计算点赞数变化
+        if (action && !wasLiked) {
+            video.setLikeCount(currentLikes + 1);
+        } else if (!action && wasLiked) {
+            video.setLikeCount(currentLikes - 1);
+        }
+
+        // 发射信号通知UI更新
+        emit likeStatusChanged(videoId, action, video.likeCount());
+    }
+
+    // 发送网络请求
+    NetworkClient::instance().likeVideo(videoId, action, token,
+        [this, videoId, action](bool success, int likeCount, QString error) {
+            if (success) {
+                // 使用服务端返回的准确数据更新本地状态
+                if (m_videoMap.contains(videoId)) {
+                    VideoModel &video = m_videoMap[videoId];
+                    video.setLikeCount(likeCount);
+                    video.setLiked(action);
+
+                    // 发射信号，使用服务端返回的准确数据
+                    emit likeStatusChanged(videoId, action, likeCount);
+                }
+                qDebug() << "[BrowseVideos] 点赞成功，视频:" << videoId
+                         << "点赞数:" << likeCount;
+            } else {
+                // 网络请求失败，回滚到之前的状态
+                if (m_videoMap.contains(videoId)) {
+                    VideoModel &video = m_videoMap[videoId];
+                    bool wasLiked = !action;  // 之前的状态与当前action相反
+                    video.setLiked(wasLiked);
+
+                    // 回滚点赞数
+                    if (action) {
+                        video.setLikeCount(video.likeCount() - 1);
+                    } else {
+                        video.setLikeCount(video.likeCount() + 1);
+                    }
+
+                    // 发射信号通知UI回滚
+                    emit likeStatusChanged(videoId, wasLiked, video.likeCount());
+                }
+
+                // 发射失败信号
+                emit likeFailed(videoId, error);
+                qDebug() << "[BrowseVideos] 点赞失败，视频:" << videoId
+                         << "错误:" << error;
+            }
+        });
 }
