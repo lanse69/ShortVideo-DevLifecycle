@@ -129,3 +129,7 @@ void AuthManager::login(const QString &username, const QString &password)
         reply->deleteLater();
     });
 }
+
+QString AuthManager::getToken() const {
+    return m_token;
+}

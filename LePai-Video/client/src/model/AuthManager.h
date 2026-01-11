@@ -17,14 +17,15 @@ public:
     explicit AuthManager(QObject *parent = nullptr);
 
     Q_INVOKABLE void registerUser(const QString &username, const QString &password);
-    Q_INVOKABLE void login(const QString &username, const QString &password); // 新增登录方法
+    Q_INVOKABLE void login(const QString &username, const QString &password);
+    Q_INVOKABLE QString getToken() const;
     //Q_INVOKABLE void logout(); //登出方法
 
 signals:
     void registrationSuccess();
     void registrationFailed(const QString &message);
-    void loginSuccess(); // 新增登录成功信号
-    void loginFailed(const QString &message); // 新增登录失败信号
+    void loginSuccess();
+    void loginFailed(const QString &message);
     void wasLoginChanged();
 
     void currentUserChanged();

@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QCoreApplication>
+#include <QQmlContext>
 #include "videoaudiomerger.h"
 #include "fileutils.h"
 #include "ConfigManager.h"

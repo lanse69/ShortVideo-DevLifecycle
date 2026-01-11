@@ -36,12 +36,12 @@ Rectangle {
 
     BrowseVideosModelView {
         id: browseVideosModelView
-        onVideosLoaded: {
+        onVideosLoaded: (videoList)=>{
             console.log("收到视频数据，数量:", videoList.length);
             // 将新视频添加到ListModel
             for (var i = 0; i < videoList.length; i++) {
                 var video = videoList[i];
-                videoListModel.append({
+                listModel.append({
                     "videoId": video.id,            // 使用 id 字段
                     //"userId": video.userId,         // 可能为空
                     "title": video.title,
@@ -51,8 +51,11 @@ Rectangle {
                     "description": video.title,     // 描述可以用标题替代，因为没有description字段
                     //"createdAt": video.createdAt,   // 可能为空
                     "authorName": video.authorName, // 作者名
-                    "authorAvatar": video.authorAvatar // 作者头像
+                    "authorAvatar": video.authorAvatar ,// 作者头像
+                    "isFollowed":video.isFollowed,
+                    "isLiked" :video.isLiked
                 });
+                console.log("视频:", video);
             }
         }
         onVideosRequestFailed:{
@@ -136,7 +139,7 @@ Rectangle {
                     id: currentPlayer
                     width: videoListView.width
                     height: videoListView.height
-                    playerSource:model.source
+                    playerSource:model.url
                     property bool shouldPlay: index==videoListView.currentIndex && videoListView.visible
                     onShouldPlayChanged: {
                         if (shouldPlay) {
@@ -204,7 +207,7 @@ Rectangle {
                             opacity: videoItem.avatarOpacity
 
                             // 状态：true=已关注（显示减号），false=未关注（显示加号）
-                            property bool isFollowing: false
+                            property bool isFollowing: model.isFollowed
 
                             Text {
                                 id: followText
@@ -290,7 +293,7 @@ Rectangle {
 
                         Text {
                             id: likeCount
-                            text: "9.1w"
+                            text: model.likeCount
                             color: "#FFFFFF"
                             font.pixelSize: 12
                             opacity: videoItem.avatarOpacity
@@ -313,7 +316,7 @@ Rectangle {
                     // 用户名
                     Text {
                         id: usernameText
-                        //text: username
+                        text: model.authorName
                         color: "#FFFFFF"
                         font.pixelSize: 16
                         font.bold: true
@@ -323,7 +326,7 @@ Rectangle {
                     // 视频描述
                     Text {
                         id: descriptionText
-                        text: description
+                        text: model.title
                         color: "#FFFFFF"
                         font.pixelSize: 14
                         Layout.maximumWidth: 280

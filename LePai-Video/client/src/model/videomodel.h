@@ -10,7 +10,7 @@ public:
     VideoModel(const QString& id,  const QString& title,
                const QString& url, const QString& coverUrl, int duration,
                long long likeCount,
-               const QString& authorName, const QString& authorAvatar, bool isLiked = false);
+               const QString& authorName, const QString& authorAvatar, bool isLiked,bool isFollowed);
 
     static VideoModel fromJson(const QJsonObject &json);
     QJsonObject toJson() const;

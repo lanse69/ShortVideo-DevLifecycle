@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import LePaiClient
 
 Rectangle {
     id: root
@@ -132,13 +133,20 @@ Rectangle {
                     console.log("5. 是否合并过:", videoData.hasMerged)
                     console.log("6. 是否有音乐:", videoData.hasMusic)
 
-                    // 清理临时文件（如果存在且需要清理）
-                    cleanupTempFile()
+                    var token = authManager.getToken()
+                    videoPublisher.publishVideo(videoData.videoPath, descriptionArea.text, token)
 
-                    console.log("发布流程完成（模拟）")
-                    root.publishComplete()
+                    //root.publishComplete()
                 }
             }
+        }
+    }
+    VideoPublisher{
+        id:videoPublisher
+        onPublishSuccess:{
+            console.log("发布流程完成")
+            // 清理临时文件（如果存在且需要清理）
+            cleanupTempFile()
         }
     }
 
