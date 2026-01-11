@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QQmlEngine>
 #include <QNetworkAccessManager>
+#include <QJsonObject>
 
 #include "videomodel.h"
 
@@ -18,15 +19,14 @@ signals:
     void videosLoaded(const QVariantList &videoList);
     void videosRequestFailed(QString m_errorMessage);
 
+
 private:
-    QNetworkAccessManager *m_networkManager;
     QString m_apiBaseUrl;
     QMap<QString, VideoModel> m_videoMap;
     bool m_isLoading;
     QString m_errorMessage;
 
     int m_nextOffset{};
-
-    void onNetworkReplyVideosFinished();
+    void handleVideosResponse(bool success, const QJsonObject &response);
     void parseVideoData(const QByteArray &data);
 };

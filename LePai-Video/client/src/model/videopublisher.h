@@ -26,7 +26,6 @@ public:
 
     // QML可调用的方法
     Q_INVOKABLE void publishVideo(const QString &filePath, const QString &title,const QString &token);
-    Q_INVOKABLE void cancelUpload();
 
     // 获取属性值
     bool isUploading() const { return m_isUploading; }
@@ -40,10 +39,6 @@ signals:
     void publishSuccess(const QString &videoId);
     void publishFailed(const QString &errorMessage);
 
-private slots:
-    void onMinIOUploadFinished();
-    void onTaskSubmitFinished();
-
 private:
     void uploadToMinIO(const QString &filePath);
     void submitPublishTask();
@@ -53,15 +48,11 @@ private:
 
     static VideoPublisher* m_instance;
 
-    QNetworkAccessManager *m_networkManager;
-    QNetworkReply *m_currentReply;
     QFile *m_uploadFile;
 
     QString m_videoUUID;
     QString m_tempUploadUrl;
     QString m_videoTitle;
-    QString m_uploadEndpoint;
-    QString m_apiServerUrl;
 
     QString m_authToken;
 

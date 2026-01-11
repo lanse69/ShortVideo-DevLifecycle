@@ -19,7 +19,7 @@ public:
     Q_INVOKABLE void registerUser(const QString &username, const QString &password);
     Q_INVOKABLE void login(const QString &username, const QString &password);
     Q_INVOKABLE QString getToken() const;
-    //Q_INVOKABLE void logout(); //登出方法
+    Q_INVOKABLE void logout(); //登出方法
 
 signals:
     void registrationSuccess();
@@ -31,8 +31,7 @@ signals:
     void currentUserChanged();
 
 private:
-    QNetworkAccessManager *m_networkManager;
-    QString m_apiBaseUrl;
+
     QString m_token; // 存储登录后的token
     UserModel *m_currentUser;  // 存储当前用户信息
     bool m_wasLogin = false;

@@ -7,6 +7,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 COMPONENTS Quick Multimedia Network REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core)
 
 qt_standard_project_setup(REQUIRES 6.9)
 
@@ -56,6 +57,7 @@ qt_add_qml_module(appLePaiClient
         QML_FILES src/view/AudioWaveform.qml
         QML_FILES src/view/MergeControlPanel.qml
         QML_FILES src/view/VideoWaveform.qml
+        SOURCES src/networkclient.h src/networkclient.cpp
 )
 
 target_include_directories(appLePaiClient PRIVATE
@@ -68,6 +70,7 @@ target_link_libraries(appLePaiClient PRIVATE
     Qt6::Multimedia
     Qt6::Network
 )
+target_link_libraries(appLePaiClient PRIVATE Qt6::Core)
 
 # 复制配置文件
 set(CONFIG_SRC "${CMAKE_SOURCE_DIR}/config/config.json")
