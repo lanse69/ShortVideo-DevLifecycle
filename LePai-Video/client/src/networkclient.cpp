@@ -120,7 +120,7 @@ void NetworkClient::sendLoginRequest(const QString &username, const QString &pas
     });
 }
 
-void NetworkClient::requestVideos(int offset, int limit,
+void NetworkClient::requestVideos(int offset, int limit, const QString &token,
                                   std::function<void(bool success, QJsonObject response)> callback)
 {
     QUrl url(m_apiBaseUrl + "/api/feed/discovery");
@@ -130,7 +130,14 @@ void NetworkClient::requestVideos(int offset, int limit,
     url.setQuery(query);
 
     QNetworkRequest request(url);
-    qDebug() << "Sending video request to:" << url.toString();
+    
+    if (!token.isEmpty()) {
+        QString bearerToken = "Bearer " + token;
+        request.setRawHeader("Authorization", bearerToken.toUtf8());
+        qDebug() << "[Network] Requesting videos with Token";
+    } else {
+        qDebug() << "[Network] Requesting videos as Guest";
+    }
 
     QNetworkReply *reply = m_networkManager->get(request);
 

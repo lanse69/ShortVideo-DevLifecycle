@@ -8,16 +8,14 @@ ApplicationWindow {
     // 判断是否为移动设备
     readonly property bool isMobile: Qt.platform.os === "android"
 
-    // 直接设置尺寸
-    width: isMobile ? Screen.width : 400   // 电脑固定宽度
-    height: isMobile ? Screen.height : 800  // 电脑固定高度
+    width: isMobile ? Screen.width : 400
+    height: isMobile ? Screen.height : 800
 
-    // 最小尺寸（防止窗口被缩得太小）
+    // 最小尺寸
     minimumWidth: isMobile ? Screen.width : 400
     minimumHeight: isMobile ? Screen.height : 800
 
-
-    // 最大尺寸（防止窗口被缩得太大）
+    // 最大尺寸
     maximumWidth: isMobile ? Screen.width : 700
     maximumHeight: isMobile ? Screen.height : 1300
     visible: true

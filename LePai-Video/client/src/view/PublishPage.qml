@@ -145,37 +145,33 @@ Rectangle {
         id:videoPublisher
         onPublishSuccess:{
             console.log("发布流程完成")
-            // 清理临时文件（如果存在且需要清理）
+            // 清理临时文件
             cleanupTempFile()
         }
     }
 
     // 清理临时文件的函数
     function cleanupTempFile() {
-        console.log("=== 清理临时文件检查 ===")
-
         // 确保有有效的临时文件路径
         if (!videoData.tempFilePath || videoData.tempFilePath === "") {
-            console.log("✓ 没有临时文件需要清理")
+            console.log("没有临时文件需要清理")
             return
         }
 
         // 确保临时文件存在
         if (!fileutils || !fileutils.fileExists(videoData.tempFilePath)) {
-            console.log("✓ 临时文件不存在，无需清理:", videoData.tempFilePath)
+            console.log("临时文件不存在，无需清理:", videoData.tempFilePath)
             return
         }
 
-        // 安全保护：确保不是原视频
         if (videoData.originalVideoPath &&
             videoData.tempFilePath === videoData.originalVideoPath) {
-            console.log("⚠️ 安全保护：临时文件路径与原视频相同，不删除")
+            console.log("安全保护：临时文件路径与原视频相同，不删除")
             return
         }
 
-        // 确保确实合并过
         if (!videoData.hasMerged) {
-            console.log("⚠️ 未合并过，不删除临时文件")
+            console.log("未合并过，不删除临时文件")
             return
         }
 
@@ -183,20 +179,19 @@ Rectangle {
 
         // 删除临时文件
         if (fileutils.deleteFile(videoData.tempFilePath)) {
-            console.log("✓ 临时文件删除成功")
+            console.log("临时文件删除成功")
 
             // 获取临时文件所在目录
             var tempDir = fileutils.getFileDirectory(videoData.tempFilePath)
             console.log("临时文件目录:", tempDir)
 
         } else {
-            console.log("✗ 临时文件删除失败")
+            console.log("临时文件删除失败")
         }
 
-        // 确认原视频安全
         if (videoData.originalVideoPath &&
             fileutils.fileExists(videoData.originalVideoPath)) {
-            console.log("✓ 原视频安全:", fileutils.getFileName(videoData.originalVideoPath))
+            console.log("原视频安全:", fileutils.getFileName(videoData.originalVideoPath))
         }
     }
 }

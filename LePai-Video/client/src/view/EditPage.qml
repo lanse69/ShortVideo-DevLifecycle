@@ -14,8 +14,7 @@ Rectangle {
     property string selectedMusicArtist: ""
     property bool isMusicSelected: false
 
-
-    // 新增：保存原始视频路径
+    // 保存原始视频路径
     property string originalVideoSource: ""
 
     signal editComplete(var musicData)
@@ -24,7 +23,6 @@ Rectangle {
     property bool musicSelectorVisible: false
     property bool mergeControlVisible: false
 
-    // 添加新属性：跟踪合并状态
     property bool hasActuallyMerged: false
     property string mergedFilePath: ""
 
@@ -32,7 +30,7 @@ Rectangle {
        onVideoSourceChanged: {
            if (videoSource !== "" && originalVideoSource === "") {
                originalVideoSource = videoSource
-               console.log("📌 保存原始视频路径:", originalVideoSource)
+               console.log("保存原始视频路径:", originalVideoSource)
            }
        }
 
@@ -116,7 +114,6 @@ Rectangle {
                     Layout.fillHeight: true
                     color: "#333"
 
-                    // VideoOutput显示视频画面
                     VideoOutput {
                         id: videoOutput
                         anchors.fill: parent
@@ -179,7 +176,6 @@ Rectangle {
                 font.pixelSize: 16
                 visible: isMusicSelected
             }
-            // 注意：已删除音频播放控制按钮
         }
 
         // 视频预览条区域
@@ -271,7 +267,6 @@ Rectangle {
                         verticalAlignment: Text.AlignVCenter
                         anchors.centerIn: parent
                     }
-                    // EditPage.qml - 只修改"下一步"按钮的onClicked
                     onClicked: {
                         var musicData = null
 
@@ -350,7 +345,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: Math.min(parent.width * 0.05, 20)
-        text: "🎬 合并设置"
+        text: "合并设置"
         background: Rectangle {
             color: "#4a90e2"
             radius: 5
@@ -463,7 +458,6 @@ Rectangle {
         }
     }
 
-    // 使用独立的合并控制面板组件
     MergeControlPanel {
         id: mergeControlPanel
         anchors.right: parent.right
@@ -486,7 +480,6 @@ Rectangle {
         videoPosition: videoPlayer.position
         audioPosition: audioPlayer.position
 
-        // 在 MergeControlPanel 的 onMergeRequested 中添加详细调试
         onMergeRequested: function(videoStart, videoEnd, audioStart, audioEnd) {
             console.log("=== 开始合并调试 ===")
             console.log("1. videoaudiomerger 对象:", videoaudiomerger)
@@ -495,15 +488,13 @@ Rectangle {
             console.log("4. 视频时间范围:", videoStart, "-", videoEnd, "ms")
             console.log("5. 音频时间范围:", audioStart, "-", audioEnd, "ms")
 
-            // 第一步：显示准备对话框
             mergeStatusDialog.status = "preparing"
             mergeStatusDialog.message = "正在准备合并参数..."
             mergeStatusDialog.open()
 
-            // 立即开始合并
             startVideoAudioMerge(videoStart, videoEnd, audioStart, audioEnd)
         }
-        // 修改 startVideoAudioMerge 函数，使用 fileutils 生成路径
+
         function startVideoAudioMerge(videoStart, videoEnd, audioStart, audioEnd) {
             console.log("开始执行合并，参数:", videoStart, videoEnd, audioStart, audioEnd)
 
@@ -515,7 +506,6 @@ Rectangle {
                     videoaudiomerger.setAudioFile(audioSource)
                     videoaudiomerger.setAudioTimeRange(audioStart, audioEnd)
 
-                    // 使用 fileutils 生成合并文件路径
                     var originalVideoPath = videoSource.replace("file://", "")
                     var outputFile = fileutils.getMergedVideoPath(originalVideoPath)
 
@@ -553,14 +543,12 @@ Rectangle {
             }
         }
 
-        // 修改合并完成后的逻辑
         Timer {
             id: checkMergeTimer
             interval: 3000 // 3秒后检查
             onTriggered: {
                 // 检查合并是否真的完成了
                 if (mergedFilePath && mergedFilePath !== "") {
-                    // 1. 切换视频播放器到合并后的视频
                     console.log("切换到合并后的视频:", mergedFilePath)
 
                     // 停止当前视频播放
@@ -578,13 +566,11 @@ Rectangle {
                     // 重新开始播放
                     videoPlayer.play()
 
-                    // 2. 如果音乐正在播放，暂停音乐
                     if (audioPlayer.playbackState === MediaPlayer.PlayingState) {
                         audioPlayer.pause()
                         console.log("已暂停音乐播放")
                     }
 
-                    // 3. 更新合并状态对话框
                     mergeStatusDialog.status = "success"
                     mergeStatusDialog.message = "合并完成，已切换到新视频"
 

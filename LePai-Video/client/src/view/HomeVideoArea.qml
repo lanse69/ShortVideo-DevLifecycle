@@ -8,6 +8,10 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
+    function getCurrentToken() {
+        return authManager ? authManager.getToken() : ""
+    }
+
     BrowseVideosModelView {
         id: browseVideosModelView
         onVideosLoaded: (videoList)=>{
@@ -21,8 +25,8 @@ Rectangle {
                     "title": video.title,
                     "url": video.url,
                     "likeCount": video.likeCount,
-                    "coverUrl": video.coverUrl,     // 使用 coverUrl 字段
-                    "description": video.title,     // 替代description字段
+                    "coverUrl": video.coverUrl,
+                    "description": video.title,
                     //"createdAt": video.createdAt,   // 为空
                     "authorName": video.authorName, // 作者名
                     "authorAvatar": video.authorAvatar ,// 作者头像
@@ -52,6 +56,15 @@ Rectangle {
         }
     }
 
+    Timer {
+        id: initTimer
+        interval: 10
+        repeat: false
+        onTriggered: {
+             console.log("初始化加载视频，Token:", getCurrentToken())
+             browseVideosModelView.requestVideos(getCurrentToken())
+        }
+    }
 
     ListView {
         id: videoListView
@@ -66,7 +79,7 @@ Rectangle {
         property bool atBottomEnd: false
         onMovementEnded: {
             if (contentY + height > contentHeight - 50) {
-                browseVideosModelView.requestVideos();
+                browseVideosModelView.requestVideos(getCurrentToken());
             }
         }
 
@@ -74,7 +87,7 @@ Rectangle {
         model:ListModel {
             id:listModel
             Component.onCompleted: {
-                browseVideosModelView.requestVideos();
+                initTimer.start()
             }
         }
 

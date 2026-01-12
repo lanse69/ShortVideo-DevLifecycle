@@ -23,11 +23,8 @@ class VideoPublisher : public QObject {
 
 public:
     explicit VideoPublisher(QObject *parent = nullptr);
-
-    // QML可调用的方法
     Q_INVOKABLE void publishVideo(const QString &filePath, const QString &title,const QString &token);
 
-    // 获取属性值
     bool isUploading() const { return m_isUploading; }
     int uploadProgress() const { return m_uploadProgress; }
     QString statusMessage() const { return m_statusMessage; }

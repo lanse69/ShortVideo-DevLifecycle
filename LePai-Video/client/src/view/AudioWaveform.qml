@@ -103,21 +103,20 @@ Rectangle {
             color: "#1a1a1a"
             radius: 5
 
-            // 刻度系统：每10%一个长刻度，每5%一个短刻度
             Repeater {
-                model: 21  // 0-100%，每5%一个刻度
+                model: 21
                 Rectangle {
                     width: 1
-                    height: index % 2 === 0 ? 15 : 8  // 长刻度15px，短刻度8px
+                    height: index % 2 === 0 ? 15 : 8
                     color: index % 2 === 0 ? "#666" : "#444"
                     x: index * (parent.width / 20)
                     y: parent.height - height
                 }
             }
 
-            // 长刻度标签（所有长刻度都显示时间）
+            // 长刻度标签
             Repeater {
-                model: 11  // 显示所有长刻度的时间（0%、10%、20%、...、100%）
+                model: 11
                 Text {
                     text: formatTimeForScale(index * (duration / 10))
                     color: "#999"
@@ -144,7 +143,6 @@ Rectangle {
                     var progressX = progress * width
                     var playedSamples = Math.floor(progress * waveformData.length)
 
-                    // 绘制完整波形（灰色）
                     ctx.strokeStyle = "#555"
                     ctx.lineWidth = 1
                     ctx.beginPath()
@@ -162,7 +160,6 @@ Rectangle {
                     }
                     ctx.stroke()
 
-                    // 绘制已播放部分的波形（绿色）
                     if (playedSamples > 0) {
                         ctx.strokeStyle = "#50c878"
                         ctx.lineWidth = 1.5
@@ -181,7 +178,6 @@ Rectangle {
                         }
                         ctx.stroke()
 
-                        // 绘制波形填充（半透明绿色）
                         ctx.fillStyle = "#50c87820"
                         ctx.beginPath()
                         ctx.moveTo(0, centerY)
@@ -222,7 +218,7 @@ Rectangle {
             }
         }
 
-        // 鼠标交互
+        // TODO：修改
         MouseArea {
             anchors.fill: parent
             onClicked: function(mouse) {
@@ -272,7 +268,7 @@ Rectangle {
         }
     }
 
-    // 工具函数：格式化时间
+    // 格式化时间
     function formatTime(milliseconds) {
         if (!milliseconds || milliseconds <= 0) return "00:00"
 
@@ -285,7 +281,7 @@ Rectangle {
                seconds.toString().padStart(2, '0')
     }
 
-    // 工具函数：格式化刻度时间
+    // 格式化刻度时间
     function formatTimeForScale(milliseconds) {
         if (!milliseconds || milliseconds <= 0) return "0:00"
 

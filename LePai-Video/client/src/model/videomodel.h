@@ -25,16 +25,16 @@ public:
     void setLikeCount(int count) { m_likeCount = count; }
 
 private:
-    QString m_id;            // 对应服务端 id
-    //QString m_userId;        // 对应服务端 userId
+    QString m_id; 
+    //QString m_userId;   
     QString m_title;
     QString m_url;
-    QString m_coverUrl;      // 对应服务端 coverUrl
+    QString m_coverUrl;  
     int m_duration;
     long long m_likeCount;
     //QString m_createdAt;
-    QString m_authorName;    // 对应服务端 author
-    QString m_authorAvatar;  // 对应服务端 author_avatar
+    QString m_authorName;  
+    QString m_authorAvatar; 
     bool m_isLiked;
     bool m_isFollowed;
 };

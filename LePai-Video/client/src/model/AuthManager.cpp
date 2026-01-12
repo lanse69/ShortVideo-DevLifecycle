@@ -13,15 +13,19 @@
 
 AuthManager::AuthManager(QObject *parent) : QObject(parent)
 {
-    // 从本地设置读取保存的 token（如果存在）
-    QSettings settings;
-
-    // m_token = settings.value("auth/token").toString();
-    // if (!m_token.isEmpty()) {
-    //     m_wasLogin = true;
-    //     // 如果需要，可以在这里验证 token 有效性
-    // }
     m_currentUser = new UserModel(this);
+
+    // 从本地读取 Token
+    QSettings settings;
+    QString savedToken = settings.value("auth/token").toString();
+
+    if (!savedToken.isEmpty()) {
+        m_token = savedToken;
+        m_wasLogin = true;
+        qDebug() << "[AuthManager] 检测到本地 Token，自动登录成功";
+    } else {
+        qDebug() << "[AuthManager] 未检测到本地 Token";
+    }
 }
 
 void AuthManager::registerUser(const QString &username, const QString &password)
@@ -37,7 +41,6 @@ void AuthManager::registerUser(const QString &username, const QString &password)
 
 void AuthManager::login(const QString &username, const QString &password)
 {
-    // 使用 NetworkClient 发送登录请求
     NetworkClient::instance().sendLoginRequest(username, password,
        [this](bool success, QJsonObject response) {
            if (success) {
@@ -45,8 +48,9 @@ void AuthManager::login(const QString &username, const QString &password)
                QString token = response["token"].toString();
                m_token = token;
 
-               // QSettings settings;
-               // settings.setValue("auth/token", token);
+               // 保存 Token 到本地
+               QSettings settings;
+               settings.setValue("auth/token", token);
 
                // 更新用户信息
                if (response.contains("user") && response["user"].isObject()) {
@@ -56,9 +60,8 @@ void AuthManager::login(const QString &username, const QString &password)
 
                // 更新登录状态
                m_wasLogin = true;
-
                emit loginSuccess();
-               qDebug() << "登录成功，token:" << token;
+               emit wasLoginChanged();
            } else {
                // 登录失败
                QString errorMsg = response["message"].toString("登录失败");

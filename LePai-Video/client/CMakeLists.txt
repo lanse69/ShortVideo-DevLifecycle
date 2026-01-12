@@ -24,14 +24,18 @@ qt_add_qml_module(appLePaiClient
         src/model/AuthManager.cpp
         src/model/browsevideosmodelview.h
         src/model/browsevideosmodelview.cpp
-
         src/model/videomodel.h
         src/model/videomodel.cpp
-
         src/model/usermodel.h
         src/model/usermodel.cpp
         src/model/videopublisher.h
         src/model/videopublisher.cpp
+        src/networkclient.h 
+        src/networkclient.cpp
+        src/model/fileutils.h 
+        src/model/fileutils.cpp
+        src/model/videoaudiomerger.h 
+        src/model/videoaudiomerger.cpp
 
     QML_FILES
         src/view/Main.qml
@@ -49,15 +53,23 @@ qt_add_qml_module(appLePaiClient
         src/view/EditPage.qml
         src/view/PublishPage.qml
         src/view/VideoPlayWindow.qml
-        QML_FILES src/view/LoginPage.qml
-        QML_FILES src/view/Player.qml
-        QML_FILES src/view/RegisterPage.qml
-        SOURCES src/model/fileutils.h src/model/fileutils.cpp
-        SOURCES src/model/videoaudiomerger.h src/model/videoaudiomerger.cpp
-        QML_FILES src/view/AudioWaveform.qml
-        QML_FILES src/view/MergeControlPanel.qml
-        QML_FILES src/view/VideoWaveform.qml
-        SOURCES src/networkclient.h src/networkclient.cpp
+        src/view/LoginPage.qml
+        src/view/Player.qml
+        src/view/RegisterPage.qml
+        src/view/AudioWaveform.qml
+        src/view/MergeControlPanel.qml
+        src/view/VideoWaveform.qml
+
+    RESOURCES 
+        android/AndroidManifest.xml 
+        android/build.gradle 
+        android/res/values/libs.xml 
+        android/res/xml/qtprovider_paths.xml 
+        android/gradle/wrapper/gradle-wrapper.jar 
+        android/gradle/wrapper/gradle-wrapper.properties 
+        android/gradle.properties 
+        android/gradlew 
+        android/gradlew.bat
 )
 
 target_include_directories(appLePaiClient PRIVATE
@@ -82,3 +94,7 @@ add_custom_command(
         ${CONFIG_SRC}
         ${CONFIG_DST}
 )
+
+if(ANDROID)
+    set_property(TARGET appLePaiClient PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/android)
+endif()

@@ -4,11 +4,9 @@ import QtQuick.Layouts
 Rectangle {
     color: "transparent"
 
-    // 信号：当页面切换时发出
     signal pageChanged(int pageIndex)  // 0=推荐，1=关注
 
-
-    // 当前选中的标签：true=关注，false=推荐
+    // true=关注，false=推荐
     property bool isFollowTab: false
 
     RowLayout {
@@ -50,7 +48,7 @@ Rectangle {
                     TapHandler {
                         onTapped: {
                             isFollowTab = true
-                            pageChanged(1)  // 发出信号，切换到关注页
+                            pageChanged(1)
                             console.log("切换到关注页面")
                         }
                     }

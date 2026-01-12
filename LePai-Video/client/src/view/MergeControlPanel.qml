@@ -8,8 +8,6 @@ Rectangle {
     width: 400
     color: "#2d2d2d"
     clip: true
-
-    // 属性
     property string videoSource: ""
     property string audioSource: ""
     property real videoDuration: 0
@@ -130,7 +128,7 @@ Rectangle {
             spacing: 8
 
             Label {
-                text: "🎵 音频时间范围"
+                text: "音频时间范围"
                 color: "#50c878"
                 font.bold: true
                 font.pixelSize: 14
@@ -263,7 +261,7 @@ Rectangle {
         Button {
             Layout.fillWidth: true
             Layout.preferredHeight: 40
-            text: "🚀 开始合并"
+            text: "开始合并"
             enabled: videoSource && audioSource
             background: Rectangle {
                 color: parent.enabled ? "#ff6b6b" : "#666"

@@ -11,7 +11,8 @@ BrowseVideosModelView::BrowseVideosModelView(QObject *parent)
 {
     m_isLoading = false;
 }
-void BrowseVideosModelView::requestVideos()
+
+void BrowseVideosModelView::requestVideos(const QString &token)
 {
     if (m_isLoading) {
         qDebug() << "[BrowseVideos] 已经在加载中，跳过请求";
@@ -21,8 +22,7 @@ void BrowseVideosModelView::requestVideos()
     m_isLoading = true;
     m_errorMessage.clear();
 
-    // 使用 NetworkClient 发送请求
-    NetworkClient::instance().requestVideos(m_nextOffset, 3,
+    NetworkClient::instance().requestVideos(m_nextOffset, 3, token,
                                             [this](bool success, QJsonObject response) {
                                                 this->handleVideosResponse(success, response);
                                             });
@@ -140,7 +140,7 @@ void BrowseVideosModelView::likeVideo(const QString &videoId, bool action, const
         return;
     }
 
-    // 乐观更新：立即更新本地状态
+    // 立即更新本地状态
     if (m_videoMap.contains(videoId)) {
         VideoModel &video = m_videoMap[videoId];
         bool wasLiked = video.isLiked();
@@ -170,7 +170,6 @@ void BrowseVideosModelView::likeVideo(const QString &videoId, bool action, const
                     video.setLikeCount(likeCount);
                     video.setLiked(action);
 
-                    // 发射信号，使用服务端返回的准确数据
                     emit likeStatusChanged(videoId, action, likeCount);
                 }
                 qDebug() << "[BrowseVideos] 点赞成功，视频:" << videoId
@@ -179,7 +178,7 @@ void BrowseVideosModelView::likeVideo(const QString &videoId, bool action, const
                 // 网络请求失败，回滚到之前的状态
                 if (m_videoMap.contains(videoId)) {
                     VideoModel &video = m_videoMap[videoId];
-                    bool wasLiked = !action;  // 之前的状态与当前action相反
+                    bool wasLiked = !action;
                     video.setLiked(wasLiked);
 
                     // 回滚点赞数

@@ -8,7 +8,6 @@ RowLayout {
     Layout.fillWidth: true
     spacing: 0
 
-    // 信号：当页面切换时发出
     signal bottomButtonChanged(int pageIndex)  // 0=首页，1=朋友，2=创建作品，3=个人空间
 
     // 当前选中的按钮索引
@@ -49,7 +48,7 @@ RowLayout {
         }
     }
 
-    // 发布按钮（特殊处理，不改变currentIndex）
+    // 发布按钮
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 60

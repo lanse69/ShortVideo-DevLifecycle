@@ -26,7 +26,7 @@ Rectangle {
     property bool waslogin:authManager.wasLogin
 
 
-    // 新增：登录页面（半透明覆盖层）
+    // 登录页面（半透明覆盖层）
      Rectangle {
          id: loginOverlay
          anchors.fill: parent
@@ -34,15 +34,14 @@ Rectangle {
          visible: showLoginPage&&!waslogin
          z: 100  // 确保在最上层
 
-         // 登录页面内容 - 调整为更合适的手机比例
+         // 登录页面内容
          LoginPage {
              id: loginPage
-             width: Math.min(parent.width * 0.85, 400)  // 更宽一些，适合手机
-             height: Math.min(parent.height * 0.7, 600)  // 更高一些
+             width: Math.min(parent.width * 0.85, 400)
+             height: Math.min(parent.height * 0.7, 600)
              anchors.centerIn: parent
              radius: 15  // 圆角
 
-             // 使LoginPage背景为白色
              color: "white"
             onCloseRequested:{
                 showLoginPage=false
@@ -50,18 +49,18 @@ Rectangle {
           }
      }
 
-    // 个人主页 - 四行布局
+    // 个人主页
     ColumnLayout {
         anchors.fill: parent
         spacing: 15
 
-        // 第一行：用户头像和基本信息 - 占30%
+        // 用户头像和基本信息
         ColumnLayout {
             id: headerSection
             Layout.fillWidth: true
-            Layout.preferredHeight: _profileRectangle.height * 0.3  // 总高度的30%
+            Layout.preferredHeight: _profileRectangle.height * 0.3
             spacing: 0
-            Layout.alignment: Qt.AlignHCenter  // 水平居中
+            Layout.alignment: Qt.AlignHCenter
             Layout.topMargin: 20
             TapHandler {
                     onTapped: {
@@ -80,7 +79,6 @@ Rectangle {
             //     border.width: 2
             //     Layout.alignment: Qt.AlignHCenter
             // }
-            // 方式1：使用Image元素
             Rectangle {
                 Layout.preferredWidth: 120
                 Layout.preferredHeight: 120
@@ -88,12 +86,12 @@ Rectangle {
                 border.color: "#FFFFFF"
                 border.width: 2
                 Layout.alignment: Qt.AlignHCenter
-                clip: true  // 关键：裁剪超出圆形的部分
+                clip: true
 
                 Image {
                     anchors.fill: parent
-                    anchors.margins: 2  // 避免图片覆盖边框
-                    source: authManager.currentUser.avatarUrl  // qrc路径
+                    anchors.margins: 2 
+                    source: authManager.currentUser.avatarUrl
                     fillMode: Image.PreserveAspectCrop
                 }
             }
@@ -116,7 +114,7 @@ Rectangle {
             //     Layout.alignment: Qt.AlignHCenter
             // }
 
-            // 获赞、关注、粉丝
+            // 关注、粉丝
             RowLayout {
                 spacing: 15
                 Layout.alignment: Qt.AlignHCenter
@@ -177,11 +175,10 @@ Rectangle {
             }
         }
 
-        // 第二行：两个按钮 - 固定高度
         RowLayout {
             id: buttonRow
             Layout.fillWidth: true
-            Layout.preferredHeight: 40  // 固定高度
+            Layout.preferredHeight: 40
             spacing: 10
             TapHandler {
                     onTapped: {
@@ -192,7 +189,7 @@ Rectangle {
             }
             // 编辑个人信息按钮
             Rectangle {
-                Layout.preferredWidth: 0  // 让两个按钮等宽
+                Layout.preferredWidth: 0
                 Layout.fillWidth: true
                 Layout.preferredHeight: 40
                 color: "#333333"
@@ -211,15 +208,13 @@ Rectangle {
             }
         }
 
-        // 第三行：作品、推荐、喜欢按钮行 - 固定高度
         RowLayout {
             id: tabRow
             Layout.fillWidth: true
             Layout.preferredHeight: 40
             spacing: 0
 
-            // 当前选中的标签
-            property int selectedIndex: 0  // 0:作品, 1:推荐, 2:喜欢
+            property int selectedIndex: 0  // 0:作品, 1:喜欢
 
             // 作品按钮
             Rectangle {
@@ -285,13 +280,11 @@ Rectangle {
             }
         }
 
-        // 第四行：视频预览区域 - 占据剩余空间
         Loader {
             id: profileLoader
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // 根据currentTab加载不同页面
             sourceComponent: {
                 if (currentProfileTab === 0) {
                     return _profileWroks

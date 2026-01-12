@@ -27,7 +27,7 @@ Rectangle {
 
                 // 头像
                 ColumnLayout {
-                    spacing: 0  // 头像和按钮之间的间距
+                    spacing: 0
                     Layout.alignment: Qt.AlignHCenter
 
                     // 头像
@@ -41,7 +41,7 @@ Rectangle {
                         border.width: 2
                     }
 
-                    // 关注按钮（紧靠在头像下面）
+                    // 关注按钮
                     Rectangle {
                         id: followButton
                         Layout.preferredWidth: 24
@@ -95,7 +95,7 @@ Rectangle {
                     }
                 }
 
-                // 喜欢按钮（已激活）
+                // 喜欢按钮
                 ColumnLayout {
                     spacing: 5
                     Layout.alignment: Qt.AlignHCenter

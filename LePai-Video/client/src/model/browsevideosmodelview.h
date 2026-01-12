@@ -13,7 +13,7 @@ class BrowseVideosModelView : public QObject
     QML_ELEMENT
 public:
     explicit BrowseVideosModelView(QObject *parent = nullptr);
-    Q_INVOKABLE void requestVideos();
+    Q_INVOKABLE void requestVideos(const QString &token = "");
     Q_INVOKABLE void likeVideo(const QString &videoId, bool action, const QString &token);
 
 signals:
@@ -22,7 +22,6 @@ signals:
 
     void likeStatusChanged(const QString &videoId, bool isLiked, int likeCount);
     void likeFailed(const QString &videoId, const QString &errorMessage);
-
 
 private:
     QMap<QString, VideoModel> m_videoMap;

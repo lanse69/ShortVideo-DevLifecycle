@@ -37,7 +37,7 @@ QString FileUtils::generateMergedFileName(const QString &videoPath)
     }
 
     QFileInfo fileInfo(videoPath);
-    QString baseName = fileInfo.baseName();  // 不带扩展名的文件名
+    QString baseName = fileInfo.baseName();
 
     // 使用当前日期（格式：yyyyMMdd）
     QString dateStr = QDateTime::currentDateTime().toString("yyyyMMdd");

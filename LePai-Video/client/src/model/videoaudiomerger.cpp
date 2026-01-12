@@ -5,7 +5,7 @@
 #include <QRegularExpression>
 #include <QUrl>
 
-// 添加一个辅助函数来清理文件路径
+// 清理文件路径
 QString cleanFilePath(const QString &filePath) {
     QString cleaned = filePath;
 
@@ -84,11 +84,10 @@ bool VideoAudioMerger::validateTimeRanges()
 
 void VideoAudioMerger::merge()
 {
-    // 清理文件路径，去除可能的 file:// 前缀
     QString cleanVideoFile = m_videoFile;
     QString cleanAudioFile = m_audioFile;
 
-    // 使用 QUrl 清理路径（推荐）
+    // 使用 QUrl 清理路径
     QUrl videoUrl(cleanVideoFile);
     if (videoUrl.isLocalFile()) {
         cleanVideoFile = videoUrl.toLocalFile();
@@ -137,7 +136,7 @@ void VideoAudioMerger::merge()
         outputDir.mkpath(".");
     }
 
-    // 构建FFmpeg命令 - 使用清理后的路径
+    // 构建FFmpeg命令
     QStringList arguments;
 
     // 输入视频文件和时间段
@@ -208,7 +207,6 @@ void VideoAudioMerger::onProcessOutput()
         }
     }
 
-    // 输出调试信息
     if (!output.trimmed().isEmpty()) {
         qDebug() << "FFmpeg:" << output.trimmed();
     }
@@ -281,5 +279,5 @@ qint64 VideoAudioMerger::getVideoDuration(const QString &filePath)
 
 qint64 VideoAudioMerger::getAudioDuration(const QString &filePath)
 {
-    return getVideoDuration(filePath);  // 使用相同的方法
+    return getVideoDuration(filePath);
 }

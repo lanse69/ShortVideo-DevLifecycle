@@ -7,14 +7,12 @@ Rectangle {
     // height: 80
     color: "transparent"
 
-    // 属性
     property var mediaPlayer: null
     property string filePath: ""
     property string type: "video"
     property real duration: 0
     property real position: 0
 
-    // 当属性变化时更新显示
     onFilePathChanged: updateDisplay()
     onDurationChanged: updateDisplay()
     onPositionChanged: updateDisplay()
@@ -83,7 +81,7 @@ Rectangle {
                 }
             }
 
-            // 长刻度标签（所有长刻度都显示时间）
+            // 长刻度标签
             Repeater {
                 model: 11  // 显示所有长刻度的时间（0%、10%、20%、...、100%）
                 Text {
@@ -127,12 +125,12 @@ Rectangle {
         }
     }
 
-    // 更新显示
-    function updateDisplay() {
-        // 这里可以添加更新逻辑
-    }
+    // // 更新显示
+    // function updateDisplay() {
 
-    // 工具函数：格式化时间（用于时间标签）
+    // }
+
+    // 格式化时间
     function formatTime(milliseconds) {
         if (!milliseconds || milliseconds <= 0) return "00:00"
 
@@ -153,7 +151,7 @@ Rectangle {
         }
     }
 
-    // 工具函数：格式化刻度时间（简化显示）
+    // 格式化刻度时间
     function formatTimeForScale(milliseconds) {
         if (!milliseconds || milliseconds <= 0) return "0:00"
 
@@ -162,7 +160,6 @@ Rectangle {
 
         seconds = seconds % 60
 
-        // 简化显示格式
         return minutes + ":" + seconds.toString().padStart(2, '0')
     }
 }

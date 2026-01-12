@@ -89,5 +89,9 @@ LePai-Video/client/config/config.json
 LePai-Video/server/build/
 LePai-Video/client/build/
 
+LePai-Video/client/android/build/
+LePai-Video/client/android/.gradle/
+LePai-Video/client/android/local.properties
+
 LePai-Video/infrastructure/docker-compose.yml
 LePai-Video/infrastructure/nginx_cdn/nginx.conf

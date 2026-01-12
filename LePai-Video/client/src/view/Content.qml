@@ -18,7 +18,6 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            // 根据currentTab加载不同页面
             sourceComponent: {
                 if (currentTab === 0) {
                     return _homeTab
