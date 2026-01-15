@@ -8,8 +8,7 @@ void VideoController::publish(const drogon::HttpRequestPtr& req, std::function<v
 {
     // 直接从 Attributes 获取 UserId
     std::string userId = req->attributes()->get<std::string>("userId");
-            
-    // 解析 JSON
+
     auto jsonPtr = req->getJsonObject();
     if (!jsonPtr || !jsonPtr->isMember("title") || !jsonPtr->isMember("url")) {
         auto resp = drogon::HttpResponse::newHttpResponse();
@@ -45,7 +44,6 @@ void VideoController::toggleLike(const drogon::HttpRequestPtr& req, std::functio
     // 获取用户 ID
     std::string userId = req->attributes()->get<std::string>("userId");
 
-    // 解析 JSON
     auto jsonPtr = req->getJsonObject();
     if (!jsonPtr || !jsonPtr->isMember("video_id") || !jsonPtr->isMember("action")) {
         auto resp = drogon::HttpResponse::newHttpResponse();
@@ -63,7 +61,7 @@ void VideoController::toggleLike(const drogon::HttpRequestPtr& req, std::functio
         if (success) {
             ret["code"] = 200;
             ret["message"] = msg;
-            ret["like_count"] = (Json::Int64)newCount; // 返回最新点赞数给前端更新UI
+            ret["like_count"] = (Json::Int64)newCount; // 返回最新点赞数
         } else {
             // 区分是重复点赞还是系统错误
             if (msg == "Already liked" || msg == "Like record not found") {

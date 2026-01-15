@@ -23,7 +23,7 @@ public:
     // 更新用户头像
     void updateAvatar(const std::string& userId, const std::string& url, std::function<void(bool)> callback);
 
-    // 新关注/取关
+    // 关注/取关
     // isFollow: true=关注, false=取关
     void updateFollowStatus(const std::string& followerId, const std::string& followingId, bool isFollow, std::function<void(bool success, const std::string& err)> callback);
 

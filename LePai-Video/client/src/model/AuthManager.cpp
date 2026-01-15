@@ -15,14 +15,25 @@ AuthManager::AuthManager(QObject *parent) : QObject(parent)
 {
     m_currentUser = new UserModel(this);
 
-    // 从本地读取 Token
     QSettings settings;
     QString savedToken = settings.value("auth/token").toString();
 
     if (!savedToken.isEmpty()) {
         m_token = savedToken;
-        m_wasLogin = true;
-        qDebug() << "[AuthManager] 检测到本地 Token，自动登录成功";
+        m_wasLogin = true; 
+        
+        qDebug() << "[AuthManager] 检测到本地 Token，正在校验并拉取用户信息...";
+        
+        NetworkClient::instance().getUserInfo(m_token, "", [this](bool success, QJsonObject userData, QString error) {
+            if (success) {
+                qDebug() << "[AuthManager] 自动登录成功，用户:" << userData["username"].toString();
+                m_currentUser->updateFromJson(userData);
+                emit loginSuccess();
+            } else {
+                qWarning() << "[AuthManager] Token 已失效或过期:" << error;
+                logout(); // Token 无效，登出
+            }
+        });
     } else {
         qDebug() << "[AuthManager] 未检测到本地 Token";
     }

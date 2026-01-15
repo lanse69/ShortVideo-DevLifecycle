@@ -61,7 +61,6 @@ MinioClient::MinioClient(const std::string& endpoint, const std::string& accessK
 
 std::string MinioClient::uploadFile(const std::string& bucket, const std::string& objectKey, const std::string& localPath, const std::string& publicBaseUrl) 
 {
-    // 基础校验
     if (!std::filesystem::exists(localPath)) {
         LOG_ERROR << "File not found: " << localPath;
         return "";
@@ -73,7 +72,7 @@ std::string MinioClient::uploadFile(const std::string& bucket, const std::string
     ss << file.rdbuf();
     std::string fileContent = ss.str();
     
-    // 计算 Payload Hash
+    // Payload Hash
     std::string contentSha256 = sha256Hex(fileContent);
 
     // 时间参数
@@ -82,7 +81,7 @@ std::string MinioClient::uploadFile(const std::string& bucket, const std::string
     
     // 路径和Host
     std::string uri = "/" + bucket + "/" + objectKey;
-    std::string region = "us-east-1"; // MinIO 默认 Region
+    std::string region = "us-east-1";
     std::string service = "s3";
 
     // HTTPMethod + '\n' + CanonicalURI + '\n' + CanonicalQueryString + '\n' + CanonicalHeaders + '\n' + SignedHeaders + '\n' + HashedPayload
@@ -108,18 +107,14 @@ std::string MinioClient::uploadFile(const std::string& bucket, const std::string
                                scope + "\n" +
                                sha256Hex(canonicalRequest);
 
-    // 计算 Signature Key
-    // kDate = HMAC("AWS4" + kSecret, Date)
-    // kRegion = HMAC(kDate, Region)
-    // kService = HMAC(kRegion, Service)
-    // kSigning = HMAC(kService, "aws4_request")
+    // Signature Key
     std::string kSecret = "AWS4" + secretKey_;
     std::string kDate = hmacSha256(kSecret, dateStr);
     std::string kRegion = hmacSha256(kDate, region);
     std::string kService = hmacSha256(kRegion, service);
     std::string kSigning = hmacSha256(kService, "aws4_request");
 
-    // 计算 Signature
+    // Signature
     std::string signatureRaw = hmacSha256(kSigning, stringToSign);
     
     // Hex encode signature
@@ -129,20 +124,19 @@ std::string MinioClient::uploadFile(const std::string& bucket, const std::string
     }
     std::string signature = sigSs.str();
 
-    // 构造 Authorization Header
+    // Authorization Header
     std::string authHeader = algorithm + " Credential=" + accessKey_ + "/" + scope + 
                              ", SignedHeaders=" + signedHeaders + 
                              ", Signature=" + signature;
 
 
-    // 发送请求
     auto req = drogon::HttpRequest::newHttpRequest();
     req->setPath(uri);
     req->setMethod(drogon::Put);
     req->setBody(fileContent);
     req->setContentTypeCode(drogon::CT_APPLICATION_OCTET_STREAM);
 
-    // 设置必须的头
+    // 设置头
     req->addHeader("Host", endpoint_);
     req->addHeader("X-Amz-Date", timeStr);
     req->addHeader("X-Amz-Content-Sha256", contentSha256);
@@ -216,7 +210,7 @@ bool MinioClient::removeFile(const std::string& bucket, const std::string& objec
                                scope + "\n" +
                                sha256Hex(canonicalRequest);
 
-    // 计算签名
+    // 签名
     std::string kSecret = "AWS4" + secretKey_;
     std::string kDate = hmacSha256(kSecret, dateStr);
     std::string kRegion = hmacSha256(kDate, region);
@@ -233,10 +227,9 @@ bool MinioClient::removeFile(const std::string& bucket, const std::string& objec
                              ", SignedHeaders=" + signedHeaders + 
                              ", Signature=" + signature;
 
-    // 发送请求
     auto req = drogon::HttpRequest::newHttpRequest();
     req->setPath(uri);
-    req->setMethod(drogon::Delete); // DELETE 方法
+    req->setMethod(drogon::Delete);
     req->addHeader("Host", endpoint_);
     req->addHeader("X-Amz-Date", timeStr);
     req->addHeader("X-Amz-Content-Sha256", contentSha256);

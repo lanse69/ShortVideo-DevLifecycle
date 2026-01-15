@@ -120,6 +120,38 @@ void NetworkClient::sendLoginRequest(const QString &username, const QString &pas
     });
 }
 
+void NetworkClient::getUserInfo(const QString &token, const QString &targetUserId,
+                                std::function<void(bool success, QJsonObject user, QString error)> callback)
+{
+    QString urlStr = m_apiBaseUrl + "/api/user/info";
+    if (!targetUserId.isEmpty()) {
+        urlStr += "?user_id=" + targetUserId;
+    }
+    
+    QNetworkRequest request((QUrl(urlStr)));
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QNetworkReply *reply = m_networkManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, [reply, callback]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray respData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(respData);
+            QJsonObject root = doc.object();
+            
+            if (root["code"].toInt() == 200) {
+                QJsonObject userData = root["data"].toObject();
+                callback(true, userData, "");
+            } else {
+                callback(false, {}, root["message"].toString());
+            }
+        } else {
+            callback(false, {}, reply->errorString());
+        }
+        reply->deleteLater();
+    });
+}
+
 void NetworkClient::requestVideos(int offset, int limit, const QString &token,
                                   std::function<void(bool success, QJsonObject response)> callback)
 {

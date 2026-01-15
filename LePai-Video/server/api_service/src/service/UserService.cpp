@@ -136,7 +136,7 @@ void UserService::followUser(const std::string& currentUserId, const std::string
         if (success) {
             auto redis = drogon::app().getRedisClient();
 
-            // 更新 Redis 缓存 (加速读取)
+            // 更新 Redis 缓存
             std::string key = "user:following:" + currentUserId;
             redis->execCommandAsync(
                 [](const drogon::nosql::RedisResult&){},
@@ -164,7 +164,7 @@ void UserService::getUserProfile(const std::string& targetUserId, const std::str
     auto redis = drogon::app().getRedisClient();
     std::string cacheKey = "user:profile:" + targetUserId;
 
-    // 公共逻辑：检查关注并返回
+    // 检查关注并返回
     auto checkFollowAndReturn = [this, currentUserId, targetUserId, callback](lepai::entity::User user) {
         if (!currentUserId.empty() && currentUserId != targetUserId) {
             // 如果登录且看的不是自己，去查关注关系
@@ -178,7 +178,7 @@ void UserService::getUserProfile(const std::string& targetUserId, const std::str
         }
     };
 
-    // 公共逻辑：DB 查询失败处理
+    // DB 查询失败处理
     auto onDbError = [callback](const std::string& err) {
         callback(std::nullopt, err.empty() ? "User not found" : err);
     };

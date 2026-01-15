@@ -24,6 +24,8 @@ public:
                            std::function<void(bool success, QJsonObject response)> callback);
     void likeVideo(const QString &videoId, bool action, const QString &token,
                    std::function<void(bool success, int likeCount, QString error)> callback);
+    void getUserInfo(const QString &token, const QString &targetUserId, 
+                 std::function<void(bool success, QJsonObject user, QString error)> callback);
 
     QString m_apiBaseUrl;
     QString m_cdnServerUrl;

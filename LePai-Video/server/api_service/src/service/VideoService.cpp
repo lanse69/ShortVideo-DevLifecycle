@@ -14,7 +14,6 @@ VideoService::VideoService() {
 
 void VideoService::publishVideo(const std::string& userId, const std::string& title, const std::string& rawUrl, PublishCallback callback) 
 {
-    // 构造实体
     lepai::entity::Video v;
     v.id = Utils::generateUUID();
     v.userId = userId;
@@ -29,7 +28,6 @@ void VideoService::publishVideo(const std::string& userId, const std::string& ti
         }
 
         // 写入 Redis 队列
-        // 键名必须与 Worker 中的 "video_queue" 保持一致
         auto redis = drogon::app().getRedisClient();
         redis->execCommandAsync(
             [callback, v](const drogon::nosql::RedisResult& r) {
@@ -83,7 +81,7 @@ void VideoService::updateRedisLikeCount(const std::string& videoId, int delta, s
                 redis->execCommandAsync(
                     [redis, videoId, resultCallback](const drogon::nosql::RedisResult& r2) {
                         long long val = r2.asInteger();
-                        // 加入脏队列，供 Scheduler 同步回 DB videos 表
+                        // 加入脏队列
                         redis->execCommandAsync(
                             [](const drogon::nosql::RedisResult&){}, [](const std::exception&){},
                             "SADD dirty_videos %s", videoId.c_str()

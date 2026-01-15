@@ -17,13 +17,13 @@ public:
     using VoidCallback = std::function<void(bool success, const std::string& error)>;
 
 
-    // 获取全站最新/热门视频 (读从库)
+    // 获取视频
     void getGlobalFeed(long long limit, long long offset, FeedCallback callback);
 
-    // 批量检查某用户是否点赞了这批视频 (读从库)
+    // 批量检查某用户是否点赞了这批视频
     void getLikedVideoIds(const std::string& userId, const std::vector<std::string>& videoIds, LikeStatusCallback callback);
 
-    // 创建视频记录 (初始状态 status=0 处理中)
+    // 创建视频记录
     void createVideo(const lepai::entity::Video& video, VoidCallback callback);
 
     // 添加点赞记录
@@ -32,7 +32,7 @@ public:
     // 移除点赞记录
     void removeLikeRecord(const std::string& userId, const std::string& videoId, VoidCallback callback);
     
-    // 获取视频当前的基准点赞数 (用于缓存未命中时初始化 Redis)
+    // 获取视频当前的点赞数
     void getVideoLikeCount(const std::string& videoId, std::function<void(long long)> callback);
 
     // 获取关注视频流

@@ -32,7 +32,6 @@ void UserController::registerUser(const drogon::HttpRequestPtr& req, std::functi
         return;
     }
 
-    // 调用应用服务层
     userService->registerUser(username, password, [callback](bool success, const std::string& msg) {
         Json::Value ret;
         ret["code"] = success ? 200 : 400;
@@ -155,7 +154,6 @@ void UserController::follow(const drogon::HttpRequestPtr& req, std::function<voi
     // 鉴权 (LoginFilter 注入)
     std::string currentUserId = req->attributes()->get<std::string>("userId");
 
-    // 解析
     auto jsonPtr = req->getJsonObject();
     if (!jsonPtr || !jsonPtr->isMember("target_id") || !jsonPtr->isMember("action")) {
         auto resp = drogon::HttpResponse::newHttpResponse();
@@ -192,7 +190,6 @@ void UserController::getUserInfo(const drogon::HttpRequestPtr& req, std::functio
     // 获取当前登录用户 ID (从 LoginFilter)
     std::string currentUserId = req->attributes()->get<std::string>("userId");
     
-    // 确定目标 ID
     std::string targetId;
     if (userIdParam.empty()) {
         // 没传参数 -> 查看自己
@@ -235,7 +232,6 @@ void UserController::updateName(const drogon::HttpRequestPtr& req, std::function
     // 获取当前用户 ID (LoginFilter 注入)
     std::string userId = req->attributes()->get<std::string>("userId");
 
-    // 解析 JSON
     auto jsonPtr = req->getJsonObject();
     if (!jsonPtr || !jsonPtr->isMember("new_name")) {
         auto resp = drogon::HttpResponse::newHttpResponse();

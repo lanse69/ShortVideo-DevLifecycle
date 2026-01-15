@@ -81,9 +81,6 @@ int FFmpegHelper::runProcess(const std::string& program, const std::vector<std::
 int FFmpegHelper::getVideoDuration(const std::string& inputPath) 
 {
     // 使用 ffprobe 获取时长
-    // -v error: 只显示错误
-    // -show_entries: 只显示时长
-    // -of default=...: 格式化输出，只输出纯数字
     std::vector<std::string> args = {
         "-v", "error",
         "-show_entries", "format=duration",
@@ -107,10 +104,6 @@ int FFmpegHelper::getVideoDuration(const std::string& inputPath)
 bool FFmpegHelper::generateThumbnail(const std::string& inputPath, const std::string& outputPath) 
 {
     // 使用 ffmpeg 截图
-    // -ss 00:00:01: 在第1秒截图
-    // -i input: 输入
-    // -vframes 1: 只输出1帧
-    // -y: 覆盖输出文件
     std::vector<std::string> args = {
         "-ss", "00:00:01",
         "-i", inputPath,
@@ -130,15 +123,6 @@ bool FFmpegHelper::transcodeToHls(const std::string& inputUrl, const std::string
     std::string playlistPath = outputDir + "/" + filePrefix + ".m3u8";
     std::string segmentPattern = outputDir + "/" + filePrefix + "_%03d.ts";
 
-    // FFmpeg 命令详解:
-    // -i inputUrl: 输入
-    // -c:v libx264: 视频编码器使用 H.264
-    // -c:a aac: 音频编码器
-    // -f hls: 输出格式为 HLS
-    // -hls_time 10: 每个切片约 10 秒
-    // -hls_list_size 0: m3u8 包含所有切片 (点播模式)
-    // -hls_segment_filename: 切片文件命名规则
-    // -preset veryfast -crf 23 平衡速度和质量
     std::vector<std::string> args = {
         "-v", "error",
         "-i", inputUrl,

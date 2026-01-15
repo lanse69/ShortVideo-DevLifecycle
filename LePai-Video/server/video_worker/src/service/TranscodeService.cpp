@@ -69,7 +69,6 @@ void TranscodeService::processTask(const std::string& videoId)
         return;
     }
 
-    // 准备工作区
     // 本地临时根目录: /tmp/lepai_work/<videoId>/
     std::filesystem::path workDir = std::filesystem::path("/tmp/lepai_work") / videoId;
     std::filesystem::path coverPath = workDir / "cover.jpg";
@@ -121,7 +120,7 @@ void TranscodeService::processTask(const std::string& videoId)
 
     // 并发上传切片文件
     // 所有切片放在 MinIO 的 public/videos/<videoId>/ 目录下
-    // 最终的 m3u8 地址就是: http://CDN/public/videos/<videoId>/index.m3u8
+    // 最终的 m3u8 地址: http://CDN/public/videos/<videoId>/index.m3u8
     std::vector<UploadTask> tasks;
     std::string minioPrefix = "videos/" + videoId;
     std::string m3u8ObjectName;
@@ -174,7 +173,7 @@ void TranscodeService::processTask(const std::string& videoId)
                     taskQueue.pop();
                 }
 
-                // 执行耗时的上传操作 (此时没有锁)
+                // 上传
                 std::string res = storage->uploadFile(currentTask.bucket, currentTask.objectKey, currentTask.localPath, cdnBaseUrl);
                 
                 if (res.empty()) {
@@ -199,13 +198,13 @@ void TranscodeService::processTask(const std::string& videoId)
         repository->markAsPublished(videoId, finalCoverUrl, duration, finalVideoUrl);
     
         // 清理 Temp 桶中的原始视频
-        // 从 URL 中提取文件名 (uuid.mov)
+        // 从 URL 中提取文件名
         std::string tempObjectKey;
         size_t lastSlash = rawVideoUrl.find_last_of('/');
         if (lastSlash != std::string::npos) {
             tempObjectKey = rawVideoUrl.substr(lastSlash + 1);
         } else {
-            // 兜底：如果解析失败，尝试删 mp4
+            // 解析失败，删 mp4
             tempObjectKey = videoId + ".mp4";
         }
 
