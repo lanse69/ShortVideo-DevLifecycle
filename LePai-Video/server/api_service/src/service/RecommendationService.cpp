@@ -201,7 +201,13 @@ void RecommendationService::enrichUserData(const std::string& userId, std::vecto
                     auto resArr = r.asArray();
                     for (size_t i = 0; i < resArr.size() && i < ctx->realTimeLikes.size(); ++i) {
                         if (resArr[i].type() != drogon::nosql::RedisResultType::kNil) {
-                            ctx->realTimeLikes[i] = resArr[i].asInteger();
+                            try {
+                                // ctx->realTimeLikes[i] = resArr[i].asInteger();
+                                ctx->realTimeLikes[i] = std::stoll(resArr[i].asString());
+                            } catch (...) {
+                                LOG_ERROR << "Invalid number format in Redis for video: " << ctx->finalVideos[i].id;
+                                ctx->realTimeLikes[i] = -1;
+                            }
                         }
                     }
                 }

@@ -142,9 +142,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
     extra_hosts:
       # 注入 PC-1 的 IP，供 Nginx 内部反向代理使用
-      - "minio_host:10.137.154.19"
-      - "redis_host:10.137.154.19"
-      - "db_host:10.137.154.19"
+      - "minio_host:10.83.144.19"
+      - "redis_host:10.83.144.19"
+      - "db_host:10.83.144.19"
     restart: always
     networks:
       - lepai_net

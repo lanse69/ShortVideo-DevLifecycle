@@ -34,6 +34,7 @@ struct Video {
         v["cover_url"] = coverUrl;
         v["duration"] = duration;
         v["like_count"] = (Json::Int64)likeCount;
+        v["author_id"] = userId;
         v["author"] = authorName;
         v["author_avatar"] = authorAvatar;
         v["is_liked"] = isLiked;
