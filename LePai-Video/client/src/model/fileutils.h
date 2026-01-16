@@ -31,6 +31,9 @@ public:
     // 获取文件所在目录
     Q_INVOKABLE QString getFileDirectory(const QString &filePath);
 
+    // 删除目录（递归删除）
+    Q_INVOKABLE bool deleteDirectory(const QString &dirPath);
+
     // 获取文件名（不含路径）
     Q_INVOKABLE QString getFileName(const QString &filePath);
 

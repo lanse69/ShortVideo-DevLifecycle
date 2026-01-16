@@ -75,6 +75,19 @@ bool FileUtils::deleteFile(const QString &filePath)
     return QFile::remove(filePath);
 }
 
+bool FileUtils::deleteDirectory(const QString &dirPath)
+{
+    QDir dir(dirPath);
+
+    if (!dir.exists()) {
+        qDebug() << "目录不存在:" << dirPath;
+        return true; // 目录不存在可以认为是删除成功
+    }
+
+    // 递归删除目录及其内容
+    return dir.removeRecursively();
+}
+
 QString FileUtils::getFileDirectory(const QString &filePath)
 {
     QFileInfo fileInfo(filePath);

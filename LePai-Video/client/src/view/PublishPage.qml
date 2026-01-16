@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import LePaiClient
+import QtQuick.Dialogs
 
 Rectangle {
     id: root
@@ -141,12 +142,75 @@ Rectangle {
             }
         }
     }
-    VideoPublisher{
-        id:videoPublisher
-        onPublishSuccess:{
-            console.log("发布流程完成")
-            // 清理临时文件
+    // 在 VideoPublisher 组件后添加成功对话框
+    Dialog {
+        id: publishSuccessDialog
+        title: "发布成功"
+        modal: true
+        standardButtons: Dialog.Ok
+        width: 300
+        height: 150
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+
+        background: Rectangle {
+            color: "#2d2d2d"
+            radius: 10
+            border.color: "#50c878"
+            border.width: 2
+        }
+
+        contentItem: Column {
+            anchors.fill: parent
+            anchors.margins: 15
+            spacing: 15
+
+            Text {
+                text: "视频发布成功！"
+                color: "#50c878"
+                font.pixelSize: 16
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+            }
+
+            Text {
+                text: "您的视频已成功上传\n即将返回首页..."
+                color: "white"
+                font.pixelSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                wrapMode: Text.Wrap
+            }
+        }
+
+        onAccepted: {
+            // 跳转到首页
+            console.log("发布成功，跳转到首页")
+            root.publishComplete()
+        }
+    }
+
+    // 在 VideoPublisher 的 onPublishSuccess 信号处理中
+    VideoPublisher {
+        id: videoPublisher
+        onPublishSuccess: {
+            console.log("发布成功，显示成功对话框")
             cleanupTempFile()
+            publishSuccessDialog.open()
+
+            // 跳转到首页
+            publishSuccessTimer.start()
+        }
+    }
+
+    // 添加一个定时器来延迟显示成功对话框
+    Timer {
+        id: publishSuccessTimer
+        interval: 1500  // 延迟
+        onTriggered: {
+            contentRoot.currentTab = 0
+             _bottomBar.currentIndex = 0
         }
     }
 
@@ -184,6 +248,15 @@ Rectangle {
             // 获取临时文件所在目录
             var tempDir = fileutils.getFileDirectory(videoData.tempFilePath)
             console.log("临时文件目录:", tempDir)
+
+            // 尝试删除空目录（如果是临时目录的话）
+            if (tempDir && tempDir.includes("_merged_videos")) {
+                if (fileutils.deleteDirectory(tempDir)) {
+                    console.log("空目录删除成功")
+                } else {
+                    console.log("目录不为空或删除失败")
+                }
+            }
 
         } else {
             console.log("临时文件删除失败")
