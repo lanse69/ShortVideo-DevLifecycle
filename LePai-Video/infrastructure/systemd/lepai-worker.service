@@ -1,0 +1,16 @@
+[Unit]
+Description=LePai Video Transcode Worker
+After=network.target docker.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/lepai/bin
+ExecStart=/opt/lepai/bin/video_worker
+Restart=always
+RestartSec=5
+User=root
+StandardOutput=append:/opt/lepai/logs/worker.log
+StandardError=append:/opt/lepai/logs/worker_error.log
+
+[Install]
+WantedBy=multi-user.target
