@@ -70,6 +70,7 @@ qt_add_qml_module(appLePaiClient
         android/gradle.properties 
         android/gradlew 
         android/gradlew.bat
+        src/images.qrc
 )
 
 target_include_directories(appLePaiClient PRIVATE
