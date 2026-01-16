@@ -199,6 +199,7 @@ Rectangle {
                             border.color: "#FFFFFF"
                             border.width: 2
                             opacity: videoItem.avatarOpacity
+                            visible: model.authorId===authManager.currentUser.id? false:ture
 
                             // 状态：true=已关注（显示减号），false=未关注（显示加号）
                             property bool isFollowing: model.isFollowed

@@ -37,7 +37,7 @@ void VideoRepository::getGlobalFeed(long long limit, long long offset, FeedCallb
                 lepai::entity::Video v;
                 try {
                     v.id = row["id"].as<std::string>();
-                    v.userId = row["user_id"].as<std::string>();
+                    v.userId = row["user_id"].isNull() ? "" : row["user_id"].as<std::string>();
                     v.title = row["title"].as<std::string>();
                     v.url = row["url"].as<std::string>();
                     v.coverUrl = row["cover_url"].isNull() ? "" : row["cover_url"].as<std::string>();
