@@ -1,8 +1,19 @@
 #!/bin/bash
 set -e
 
+# 获取脚本文件所在的绝对路径
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+SERVER_DIR="$SCRIPT_DIR/../../server"
+
 echo "正在编译服务端项目..."
-cd ../../server
+echo "源码路径: $SERVER_DIR"
+
+if [ ! -d "$SERVER_DIR" ]; then
+    echo "错误：找不到 server 目录: $SERVER_DIR"
+    exit 1
+fi
+
+cd "$SERVER_DIR"
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j$(nproc)
