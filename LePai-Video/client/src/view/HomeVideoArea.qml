@@ -253,12 +253,18 @@ Rectangle {
                         spacing: 5
                         Layout.alignment: Qt.AlignHCenter
 
-                        Text {
+                        Image {
                             id: loveText
-                            text: model.isLiked ? "❤️" : "🤍"
-                            color: model.isLiked ? "#FF0050" : "#FFFFFF"
-                            font.pixelSize: 40
+                            Layout.preferredWidth: 40
+                            Layout.preferredHeight: 40
                             Layout.alignment: Qt.AlignHCenter
+
+                            // 使用路径变量
+                            property string likedPath: "qrc:/images/images/liked.png"
+                            property string likePath: "qrc:/images/images/like.png"
+
+                            // 初始显示红色实心
+                            source: model.isLiked ? likedPath : likePath
                             opacity: videoItem.avatarOpacity
 
                             // 点击事件

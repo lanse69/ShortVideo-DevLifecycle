@@ -100,18 +100,28 @@ Rectangle {
                     spacing: 5
                     Layout.alignment: Qt.AlignHCenter
 
-                    Text {
-                        id:loveText
-                        text: "❤️"
-                        color: "#FF0050"  // 红色表示已喜欢
-                        font.pixelSize: 40
+                    Image {
+                        id: loveText
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
                         Layout.alignment: Qt.AlignHCenter
+
+                        // 使用路径变量
+                        property string likedPath: "qrc:/images/images/liked.png"
+                        property string likePath: "qrc:/images/images/like.png"
+
+                        // 初始显示红色实心
+                        source: likedPath
+
                         // 点击事件
                         TapHandler {
                             onTapped: {
-                                if (loveText.text === "❤️"){ loveText.text = "🤍"}
-                                    else loveText.text = "❤️"
-                                // 添加点击动画
+                                // 方法1：完整写法
+                                var currentPath = loveText.source.toString()
+                                var likedPath = "qrc:/images/images/liked.png"
+                                var likePath = "qrc:/images/images/like.png"
+
+                                loveText.source = (currentPath === likedPath) ? likePath : likedPath
                                 lovefollowAnimation.start()
                             }
                         }
@@ -141,126 +151,6 @@ Rectangle {
                         Layout.alignment: Qt.AlignHCenter
                     }
                 }
-
-                // // 评论按钮
-                // ColumnLayout {
-                //     spacing: 5
-                //     Layout.alignment: Qt.AlignHCenter
-
-                //     Text {
-                //         text: "💬"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 40
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-
-                //     Text {
-                //         text: "78"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 12
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-                // }
-
-                // // 收藏按钮（已激活）
-                // ColumnLayout {
-                //     spacing: 5
-                //     Layout.alignment: Qt.AlignHCenter
-
-                //     Text {
-                //         id: collectT
-                //         text: "⭐"  // 永远用实心星星
-                //         color: isFavorited ? "#FFD700" : "#888888"  // 金色 vs 灰色
-                //         opacity: isFavorited ? 1.0 : 0.7  // 未收藏时半透明
-                //         font.pixelSize: 40
-                //         Layout.alignment: Qt.AlignHCenter
-
-                //         TapHandler {
-                //             onTapped: {
-                //                 isFavorited = !isFavorited
-                //                 // 添加点击动画
-                //                 collectfollowAnimation.start()
-                //             }
-                //         }
-                //         // 点赞/取消关注动画
-                //         SequentialAnimation {
-                //             id: collectfollowAnimation
-                //             running: false
-                //             ScaleAnimator {
-                //                 target: collectT
-                //                 from: 1.0
-                //                 to: 1.2
-                //                 duration: 100
-                //             }
-                //             ScaleAnimator {
-                //                 target: collectT
-                //                 from: 1.2
-                //                 to: 1.0
-                //                 duration: 100
-                //             }
-                //         }
-                //     }
-
-                //     Text {
-                //         text: "78"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 12
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-                // }
-
-                // // 分享按钮
-                // ColumnLayout {
-                //     spacing: 5
-                //     Layout.alignment: Qt.AlignHCenter
-
-                //     Text {
-                //         text: "↗️"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 40
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-
-                //     Text {
-                //         text: "分享"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 12
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-                // }
-
-            //     // 音频按钮（在分享下面添加）
-            //     ColumnLayout {
-            //         spacing: 5
-            //         Layout.alignment: Qt.AlignHCenter
-
-            //         Rectangle {
-            //             Layout.preferredWidth: 50
-            //             Layout.preferredHeight: 50
-            //             Layout.alignment: Qt.AlignHCenter
-            //             radius: 25
-            //             color: "transparent"
-            //             border.color: "#FF0050"  // 粉色边框
-            //             border.width: 2
-
-            //             Text {
-            //                 text: "🎵"
-            //                 color: "#FF0050"  // 粉色图标
-            //                 font.pixelSize: 28
-            //                 anchors.centerIn: parent
-            //             }
-
-            //             // 旋转动画
-            //               RotationAnimation on rotation {
-            //                   id: rotationAnim
-            //                   from: 0
-            //                   to: 360
-            //                   duration: 2000  // 2秒转一圈
-            //                   loops: Animation.Infinite
-            //                   running: true  // 默认运行
-            //               }
-            //         }
-            //     }
             }
 
             // 底部描述区域

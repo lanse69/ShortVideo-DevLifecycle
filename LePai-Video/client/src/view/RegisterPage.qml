@@ -151,7 +151,7 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         width: 30
                         height: 30
-                        text: passwordInput.echoMode === TextField.Password ? "👁️" : "👁️‍🗨️"
+                        text: passwordInput.echoMode === TextField.Password ? "显示" : "隐藏"
                         opacity: 0
                         Component.onCompleted: opacity = 1
                         background: Rectangle { color: "transparent" }
