@@ -28,6 +28,22 @@ void BrowseVideosModelView::requestVideos(const QString &token)
                                             });
 }
 
+void BrowseVideosModelView::requestFollowingVideos(const QString &token)
+{
+    if (m_isLoading) {
+        qDebug() << "[BrowseVideos] 已经在加载中，跳过请求";
+        return;
+    }
+
+    m_isLoading = true;
+    m_errorMessage.clear();
+
+    NetworkClient::instance().requestFollowingVideos(m_nextOffset, 3, token,
+                                            [this](bool success, QJsonObject response) {
+                                                this->handleVideosResponse(success, response);
+                                            });
+}
+
 void BrowseVideosModelView::handleVideosResponse(bool success, const QJsonObject &response)
 {
     m_isLoading = false;

@@ -18,6 +18,9 @@ public:
     void requestVideos(int offset, int limit, const QString &token,
                        std::function<void(bool success, QJsonObject response)> callback);
 
+    void requestFollowingVideos(int offset, int limit, const QString &token,
+                       std::function<void(bool success, QJsonObject response)> callback);
+
     void uploadVideoFile(const QString &filePath, const QString &uuid,
                           std::function<void(bool success, QString error, QString uploadUrl)> callback);
     void submitPublishTask(const QString &title, const QString &videoUrl, const QString &token,

@@ -14,6 +14,8 @@ class BrowseVideosModelView : public QObject
 public:
     explicit BrowseVideosModelView(QObject *parent = nullptr);
     Q_INVOKABLE void requestVideos(const QString &token = "");
+    Q_INVOKABLE void requestFollowingVideos(const QString &token = "");
+
     Q_INVOKABLE void likeVideo(const QString &videoId, bool action, const QString &token);
     Q_INVOKABLE void followUser(const QString &authorId, bool action, const QString &token);
 

@@ -217,6 +217,71 @@ void NetworkClient::requestVideos(int offset, int limit, const QString &token,
     });
 }
 
+void NetworkClient::requestFollowingVideos(int offset, int limit, const QString &token,
+                                  std::function<void(bool success, QJsonObject response)> callback)
+{
+    QUrl url(m_apiBaseUrl + "/api/feed/following");
+    QUrlQuery query;
+    query.addQueryItem("limit", QString::number(limit));
+    query.addQueryItem("offset", QString::number(offset));
+    url.setQuery(query);
+
+    QNetworkRequest request(url);
+
+    if (!token.isEmpty()) {
+        QString bearerToken = "Bearer " + token;
+        request.setRawHeader("Authorization", bearerToken.toUtf8());
+        qDebug() << "[Network] Requesting videos with Token";
+    } else {
+        qDebug() << "[Network] Requesting videos as Guest";
+    }
+
+    QNetworkReply *reply = m_networkManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, [reply, callback]() {
+        QJsonObject responseObj;
+        bool success = false;
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray respData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(respData);
+
+            if (!doc.isNull()) {
+                responseObj = doc.object();
+                int code = responseObj["code"].toInt();
+                success = (code == 200);
+            } else {
+                responseObj["message"] = "响应格式错误";
+            }
+        } else {
+            QString errStr = reply->errorString();
+            QByteArray respData = reply->readAll();
+
+            // 尝试从响应中提取错误信息
+            if (!respData.isEmpty()) {
+                QJsonDocument doc = QJsonDocument::fromJson(respData);
+                if (!doc.isNull()) {
+                    QJsonObject obj = doc.object();
+                    if (obj.contains("message")) {
+                        errStr = obj["message"].toString();
+                    } else if (obj.contains("error")) {
+                        errStr = obj["error"].toString();
+                    } else if (obj.contains("details")) {
+                        errStr = obj["details"].toString();
+                    }
+                }
+            }
+            responseObj["message"] = errStr;
+        }
+
+        if (callback) {
+            callback(success, responseObj);
+        }
+
+        reply->deleteLater();
+    });
+}
+
 void NetworkClient::uploadVideoFile(const QString &filePath, const QString &uuid,
                                     std::function<void(bool success, QString error, QString uploadUrl)> callback)
 {
