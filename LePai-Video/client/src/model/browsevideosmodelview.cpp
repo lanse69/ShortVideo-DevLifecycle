@@ -103,7 +103,7 @@ void BrowseVideosModelView::parseVideoData(const QByteArray &data) {
 
     for (const QJsonValue &value : dataArray) {
         if (value.isObject()) {
-            VideoModel video = VideoModel::fromJson(value.toObject());//*******
+            VideoModel video = VideoModel::fromJson(value.toObject());
             if (!video.getVideoId().isEmpty()) {
                 m_videoMap.insert(video.getVideoId(), video);
                 videoVariantList.append(video.toVariantMap());
@@ -198,4 +198,43 @@ void BrowseVideosModelView::likeVideo(const QString &videoId, bool action, const
                          << "错误:" << error;
             }
         });
+}
+
+
+void BrowseVideosModelView::followUser(const QString &authorId, bool action, const QString &token)
+{
+    if (token.isEmpty()) {
+        emit followFailed(authorId, "用户未登录");
+        return;
+    }
+
+    // 更新所有该作者的视频的 isFollowed 状态
+    bool hasUpdated = false;
+    for (auto it = m_videoMap.begin(); it != m_videoMap.end(); ++it) {
+        if (it.value().getAuthorId() == authorId) {
+            it.value().setFollowed(action);
+            hasUpdated = true;
+        }
+    }
+
+    if (hasUpdated) {
+        emit followStatusChanged(authorId, action);
+    }
+
+    // 发送网络请求
+    NetworkClient::instance().followUser(authorId, action, token,
+         [this, authorId, action](bool success, QString error) {
+             if (!success) {
+                 // 网络请求失败，回滚到之前的状态
+                 bool rollbackAction = !action;
+                 for (auto it = m_videoMap.begin(); it != m_videoMap.end(); ++it) {
+                     if (it.value().getAuthorId() == authorId) {
+                         it.value().setFollowed(rollbackAction);
+                     }
+                 }
+                 emit followStatusChanged(authorId, rollbackAction);
+                 emit followFailed(authorId, error);
+                 qDebug() << "[BrowseVideos] 关注失败，作者:" << authorId << "错误:" << error;
+             }
+         });
 }

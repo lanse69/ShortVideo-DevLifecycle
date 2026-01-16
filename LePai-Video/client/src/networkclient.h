@@ -27,6 +27,10 @@ public:
     void getUserInfo(const QString &token, const QString &targetUserId, 
                  std::function<void(bool success, QJsonObject user, QString error)> callback);
 
+    //关注
+    void followUser(const QString &targetId, bool action, const QString &token,
+                    std::function<void(bool success, QString error)> callback);
+
     QString m_apiBaseUrl;
     QString m_cdnServerUrl;
     QString m_uploadEndpoint;

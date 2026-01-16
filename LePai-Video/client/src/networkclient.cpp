@@ -381,3 +381,51 @@ void NetworkClient::likeVideo(const QString &videoId, bool action, const QString
     });
 }
 
+void NetworkClient::followUser(const QString &targetId, bool action, const QString &token,
+                               std::function<void(bool success, QString error)> callback)
+{
+    QUrl url(m_apiBaseUrl + "/api/user/follow");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    request.setRawHeader("Authorization", QString("Bearer %1").arg(token).toUtf8());
+
+    QJsonObject json;
+    json["target_id"] = targetId;
+    json["action"] = action;
+    QByteArray data = QJsonDocument(json).toJson();
+
+    qDebug() << "[NetworkClient] 发送关注请求，targetId:" << targetId << "action:" << action;
+
+    QNetworkReply *reply = m_networkManager->post(request, data);
+
+    connect(reply, &QNetworkReply::finished, [reply, callback]() {
+        bool success = false;
+        QString error;
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray respData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(respData);
+
+            if (!doc.isNull()) {
+                QJsonObject obj = doc.object();
+                int code = obj["code"].toInt();
+
+                if (code == 200) {
+                    success = true;
+                } else {
+                    error = obj["message"].toString("未知错误");
+                }
+            } else {
+                error = "响应格式错误";
+            }
+        } else {
+            error = reply->errorString();
+        }
+
+        if (callback) {
+            callback(success, error);
+        }
+
+        reply->deleteLater();
+    });
+}
