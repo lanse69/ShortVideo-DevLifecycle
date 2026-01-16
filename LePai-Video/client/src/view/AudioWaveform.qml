@@ -44,7 +44,6 @@ Rectangle {
             // 播放/暂停按钮
             Button {
                 id: audioPlayBtn
-                text: mediaPlayer && mediaPlayer.playbackState === MediaPlayer.PlayingState ? "⏸️" : "▶️"
                 onClicked: {
                     if (mediaPlayer) {
                         if (mediaPlayer.playbackState === MediaPlayer.PlayingState)
@@ -58,14 +57,18 @@ Rectangle {
                     color: "#50c878"
                     radius: 3
                 }
-                contentItem: Text {
-                    text: audioPlayBtn.text
-                    color: "white"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
                 Layout.preferredWidth: 40
                 Layout.preferredHeight: 25
+
+                // 使用Image作为contentItem
+                contentItem: Image {
+                    // 根据播放状态切换图片
+                    source: mediaPlayer && mediaPlayer.playbackState === MediaPlayer.PlayingState
+                            ? "qrc:/images/images/pause.png"
+                            : "qrc:/images/images/play.png"
+                    anchors.fill: parent
+                    fillMode: Image.PreserveAspectFit
+                }
             }
 
             // 占位空间

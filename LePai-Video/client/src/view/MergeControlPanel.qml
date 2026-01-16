@@ -35,7 +35,7 @@ Rectangle {
             Layout.fillWidth: true
 
             Label {
-                text: "🎬 合并设置"
+                text: "合并设置"
                 color: "white"
                 font.bold: true
                 font.pixelSize: 18
@@ -63,7 +63,7 @@ Rectangle {
             spacing: 8
 
             Label {
-                text: "📹 视频时间范围"
+                text: "视频时间范围"
                 color: "#4a90e2"
                 font.bold: true
                 font.pixelSize: 14
@@ -202,7 +202,7 @@ Rectangle {
                     Layout.fillWidth: true
 
                     Label {
-                        text: "📹 视频时长:"
+                        text: "视频时长:"
                         color: "#4a90e2"
                         font.pixelSize: 12
                     }
@@ -220,7 +220,7 @@ Rectangle {
                     Layout.fillWidth: true
 
                     Label {
-                        text: "🎵 音频时长:"
+                        text: "音频时长:"
                         color: "#50c878"
                         font.pixelSize: 12
                     }
@@ -246,7 +246,7 @@ Rectangle {
                     Label {
                         id: durationMatchLabel
                         text: calculateMatchStatus()
-                        color: durationMatchLabel.text.includes("✅") ? "#50c878" : "#ff6b6b"
+                        color: durationMatchLabel.text.includes("正确") ? "#50c878" : "#ff6b6b"
                         font.pixelSize: 12
                         font.bold: true
                         Layout.fillWidth: true
@@ -303,11 +303,11 @@ Rectangle {
         var videoDuration = Math.max(0, videoEnd - videoStart)
         var audioDuration = Math.max(0, audioEnd - audioStart)
 
-        if (videoDuration <= 0 || audioDuration <= 0) return "❌"
+        if (videoDuration <= 0 || audioDuration <= 0) return "错误"
 
         // 允许0.1秒差异
         var isMatched = Math.abs(videoDuration - audioDuration) < 0.1
-        return isMatched ? "✅" : "❌"
+        return isMatched ? "正确" : "错误"
     }
 
     // 更新显示
@@ -315,7 +315,7 @@ Rectangle {
         videoDurationLabel.text = formatTime(videoDuration)
         audioDurationLabel.text = formatTime(audioDuration)
         durationMatchLabel.text = calculateMatchStatus()
-        durationMatchLabel.color = durationMatchLabel.text.includes("✅") ? "#50c878" : "#ff6b6b"
+        durationMatchLabel.color = durationMatchLabel.text.includes("正确") ? "#50c878" : "#ff6b6b"
     }
 
     // 当属性变化时更新显示

@@ -23,11 +23,11 @@ RowLayout {
             anchors.centerIn: parent
             spacing: 4
 
-            Text {
-                text: "🏠"
-                color: "#FF0050"
-                font.pixelSize: 24
+            Image {
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter
+                source: "qrc:/images/images/homeIng.png"
             }
 
             Text {
@@ -82,10 +82,10 @@ RowLayout {
             anchors.centerIn: parent
             spacing: 4
 
-            Text {
-                text: "👤"
-                color: "#FF0050"
-                font.pixelSize: 24
+            Image {
+                source: "qrc:/images/images/personal.png"
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter
             }
 

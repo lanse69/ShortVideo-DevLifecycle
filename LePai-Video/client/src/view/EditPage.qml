@@ -140,13 +140,16 @@ Rectangle {
                                 radius: width / 2
                                 opacity: 0.7
                             }
-                            contentItem: Text {
-                                text: "▶"
-                                color: "#000000"
-                                font.pixelSize: 24
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+
+                            // 使用Image作为按钮内容
+                            contentItem: Image {
+                                source: "qrc:/images/images/play.png"  // 使用你的播放图标
+                                anchors.centerIn: parent
+                                width: 24  // 调整图标大小
+                                height: 24
+                                fillMode: Image.PreserveAspectFit
                             }
+
                             onClicked: {
                                 videoPlayer.play()
                             }
