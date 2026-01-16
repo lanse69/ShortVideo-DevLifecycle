@@ -20,6 +20,7 @@ public:
     Q_INVOKABLE void login(const QString &username, const QString &password);
     Q_INVOKABLE QString getToken() const;
     Q_INVOKABLE void logout(); //登出方法
+    Q_INVOKABLE void refreshUserInfo();//更新用户信息
 
 signals:
     void registrationSuccess();
@@ -30,6 +31,11 @@ signals:
 
     void currentUserChanged();
 
+    void logoutSuccess();
+    void logoutFailed(const QString &message);
+
+    void userInfoRefreshed();
+
 private:
 
     QString m_token; // 存储登录后的token
@@ -39,5 +45,5 @@ private:
     UserModel *currentUser() const { return m_currentUser; }
     bool wasLogin() { return m_wasLogin; }
     void setwasLogin(bool b) {m_wasLogin=b;}
-
+    void performLocalLogout();
 };

@@ -7,6 +7,8 @@ Rectangle {
     color: "#ffffff"
     radius: 12
 
+    property alias usernametext:usernameInput.text
+    property alias passwordtext:passwordInput.text
     property bool showRegisterPage: false
     signal closeRequested()
 
@@ -21,7 +23,7 @@ Rectangle {
 
     Timer {
         id: closeTimer
-        interval: 500 // 0.5秒后关闭
+        interval: 300 // 0.3秒后关闭
         repeat: false
         onTriggered: {
             loginPage.closeRequested()

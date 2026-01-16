@@ -31,6 +31,8 @@ public:
     void followUser(const QString &targetId, bool action, const QString &token,
                     std::function<void(bool success, QString error)> callback);
 
+    void sendLogoutRequest(const QString &token, std::function<void(bool success, QString error)> callback);
+
     QString m_apiBaseUrl;
     QString m_cdnServerUrl;
     QString m_uploadEndpoint;

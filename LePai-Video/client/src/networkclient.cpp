@@ -429,3 +429,59 @@ void NetworkClient::followUser(const QString &targetId, bool action, const QStri
         reply->deleteLater();
     });
 }
+
+void NetworkClient::sendLogoutRequest(const QString &token, std::function<void(bool success, QString error)> callback)
+{
+    QUrl url(m_apiBaseUrl + "/api/user/logout");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    // 设置 Bearer Token
+    QString bearerToken = "Bearer " + token;
+    request.setRawHeader("Authorization", bearerToken.toUtf8());
+
+    // 使用POST方法，发送一个空的JSON对象
+    QJsonObject json;
+    QByteArray data = QJsonDocument(json).toJson();
+
+    qDebug() << "[NetworkClient] 发送登出POST请求，Token长度:" << token.length();
+    qDebug() << "[NetworkClient] 登出URL:" << url.toString();
+
+    QNetworkReply *reply = m_networkManager->post(request, data);
+
+    connect(reply, &QNetworkReply::finished, [reply, callback]() {
+        bool success = false;
+        QString error;
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray respData = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(respData);
+
+            if (!doc.isNull()) {
+                QJsonObject obj = doc.object();
+                int code = obj["code"].toInt();
+
+                if (code == 200) {
+                    success = true;
+                    qDebug() << "[NetworkClient] 登出成功";
+                } else {
+                    error = obj["message"].toString("登出失败");
+                    qDebug() << "[NetworkClient] 登出失败，错误码:" << code << "消息:" << error;
+                }
+            } else {
+                error = "响应格式错误";
+                qDebug() << "[NetworkClient] 登出响应格式错误";
+            }
+        } else {
+            error = reply->errorString();
+            qDebug() << "[NetworkClient] 登出网络错误:" << error;
+        }
+
+        if (callback) {
+            callback(success, error);
+        }
+
+        reply->deleteLater();
+    });
+}
+

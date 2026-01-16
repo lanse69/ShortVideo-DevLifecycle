@@ -25,6 +25,95 @@ Rectangle {
     property bool showLoginPage:true// 控制登录页面显示
     property bool waslogin:authManager.wasLogin
 
+    //登出按钮
+    Button {
+       id: logoutButton
+       anchors.right: parent.right
+       anchors.top: parent.top
+       anchors.margins: 15
+       width: 60
+       height: 32
+       text: "登出"
+       visible: waslogin  // 只在登录时显示
+       z: 5
+
+       background: Rectangle {
+           color: logoutButton.down ? "#c0392b" : (logoutButton.hovered ? "#e74c3c" : "#e74c3c")
+           radius: 6
+           border.color: "#fff"
+           border.width: 1
+       }
+
+       contentItem: Text {
+           text: logoutButton.text
+           color: "#FFFFFF"
+           font.pixelSize: 14
+           font.bold: true
+           horizontalAlignment: Text.AlignHCenter
+           verticalAlignment: Text.AlignVCenter
+       }
+
+       onClicked: {
+           console.log("点击了登出按钮")
+           authManager.logout()
+       }
+   }
+
+    // 登出失败提示框
+    Rectangle {
+        id: logoutErrorTip
+        anchors.centerIn: parent
+        width: 200
+        height: 50
+        radius: 8
+        color: "#333333"
+        opacity: 0
+        visible: opacity > 0
+        z: 200  // 确保在最上层
+
+        Text {
+            anchors.centerIn: parent
+            text: "登出失败"
+            color: "#FFFFFF"
+            font.pixelSize: 14
+        }
+    }
+    // 监听登出信号
+    Connections {
+       target: authManager
+       // 登出成功信号
+       function onLogoutSuccess() {
+           console.log("[ProfileTab] 登出成功")
+           // 登出后显示登录页面
+           showLoginPage = true
+           authManager.loginMassage = ""
+       }
+
+       // 登出失败信号
+       function onLogoutFailed(errorMessage) {
+           console.log("[ProfileTab] 登出失败:", errorMessage)
+           showLogoutError()
+       }
+    }
+
+    // 显示登出错误提示的方法
+    function showLogoutError() {
+        // 显示提示框
+        logoutErrorTip.opacity = 1
+
+        // 3秒后淡出
+        logoutErrorTimer.restart()
+    }
+
+    // 登出错误提示的定时器
+    Timer {
+        id: logoutErrorTimer
+        interval: 3000  // 3秒
+        onTriggered: {
+            // 淡出动画
+            logoutErrorTip.opacity = 0
+        }
+    }
 
     // 登录页面（半透明覆盖层）
      Rectangle {
@@ -32,8 +121,12 @@ Rectangle {
          anchors.fill: parent
          color: "#80000000"  // 半透明黑色背景
          visible: showLoginPage&&!waslogin
-         z: 100  // 确保在最上层
+         z: 100
 
+         onVisibleChanged: {
+            loginPage.usernametext=""
+            loginPage.passwordtext=""
+         }
          // 登录页面内容
          LoginPage {
              id: loginPage
@@ -43,8 +136,8 @@ Rectangle {
              radius: 15  // 圆角
 
              color: "white"
-            onCloseRequested:{
-                showLoginPage=false
+             onCloseRequested:{
+             showLoginPage=false
             }
           }
      }
@@ -69,16 +162,7 @@ Rectangle {
                         console.log("实际高度:", headerSection.height)
                     }
             }
-            // 头像
-            // Rectangle {
-            //     Layout.preferredWidth: 120
-            //     Layout.preferredHeight: 120
-            //     radius: 60
-            //     color: "#FF0050"
-            //     border.color: "#FFFFFF"
-            //     border.width: 2
-            //     Layout.alignment: Qt.AlignHCenter
-            // }
+
             Rectangle {
                 Layout.preferredWidth: 120
                 Layout.preferredHeight: 120
@@ -106,36 +190,11 @@ Rectangle {
                 Layout.alignment: Qt.AlignHCenter
             }
 
-            // 抖音号
-            // Text {
-            //     text: "抖音号: douyin123456"
-            //     color: "#AAAAAA"
-            //     font.pixelSize: 15
-            //     Layout.alignment: Qt.AlignHCenter
-            // }
 
             // 关注、粉丝
             RowLayout {
                 spacing: 15
                 Layout.alignment: Qt.AlignHCenter
-
-                // // 获赞
-                // ColumnLayout {
-                //     spacing: 2
-                //     Text {
-                //         text: "1.2w"
-                //         color: "#FFFFFF"
-                //         font.pixelSize: 20
-                //         font.bold: true
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-                //     Text {
-                //         text: "获赞"
-                //         color: "#AAAAAA"
-                //         font.pixelSize: 15
-                //         Layout.alignment: Qt.AlignHCenter
-                //     }
-                // }
 
                 // 关注
                 ColumnLayout {
@@ -159,7 +218,7 @@ Rectangle {
                 ColumnLayout {
                     spacing: 2
                     Text {
-                        text: authManager.currentUser.followingCount
+                        text: authManager.currentUser.followerCount
                         color: "#FFFFFF"
                         font.pixelSize: 20
                         font.bold: true

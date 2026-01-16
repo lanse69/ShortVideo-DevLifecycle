@@ -62,6 +62,7 @@ Rectangle {
                     listModel.setProperty(i, "isFollowed", isFollowed);
                 }
             }
+            refreshUserInfoTimer.start();
         }
 
         onFollowFailed: (authorId, errorMessage) => {
@@ -76,6 +77,18 @@ Rectangle {
         onTriggered: {
              console.log("初始化加载视频，Token:", getCurrentToken())
              browseVideosModelView.requestVideos(getCurrentToken())
+        }
+    }
+
+    Timer {
+        id: refreshUserInfoTimer
+        interval: 300 // 0.3秒
+        repeat: false
+        onTriggered: {
+            console.log("开始刷新当前用户信息...");
+            if (authManager && authManager.wasLogin) {
+                authManager.refreshUserInfo();
+            }
         }
     }
 
@@ -199,7 +212,7 @@ Rectangle {
                             border.color: "#FFFFFF"
                             border.width: 2
                             opacity: videoItem.avatarOpacity
-                            visible: model.authorId===authManager.currentUser.id? false:ture
+                            visible: model.authorId===authManager.currentUser.id? false:true
 
                             // 状态：true=已关注（显示减号），false=未关注（显示加号）
                             property bool isFollowing: model.isFollowed
