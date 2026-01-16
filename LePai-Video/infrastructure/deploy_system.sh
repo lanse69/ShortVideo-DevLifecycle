@@ -27,9 +27,11 @@ else
 fi
 
 # 环境配置检查
-if [ ! -f "$SCRIPT_DIR/../server/config/config.json" ]; then
-    echo -e "${YELLOW}检测到未配置环境，正在运行配置向导...${NC}"
+if [ -f "$SCRIPT_DIR/scripts/configure_env.sh" ]; then
+    echo -e "${YELLOW}正在运行配置向导...${NC}"
     bash "$SCRIPT_DIR/scripts/configure_env.sh"
+else
+    echo -e "${YELLOW}未找到 configure_env.sh${NC}"
 fi
 
 # 编译并安装到 /opt/lepai
