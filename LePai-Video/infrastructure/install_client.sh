@@ -29,8 +29,8 @@ INSTALL_DEP=${INSTALL_DEP:-N}
 
 if [[ "$INSTALL_DEP" =~ ^[Yy]$ ]]; then
     echo -e "${YELLOW}正在运行依赖安装脚本...${NC}"
-    if [ -f "$SCRIPT_DIR/infrastructure/scripts/install_dependencies.sh" ]; then
-        bash "$SCRIPT_DIR/infrastructure/scripts/install_dependencies.sh"
+    if [ -f "$SCRIPT_DIR/scripts/install_dependencies.sh" ]; then
+        bash "$SCRIPT_DIR/scripts/install_dependencies.sh"
     else
         echo -e "${RED}未找到依赖安装脚本，跳过。${NC}"
     fi
@@ -39,10 +39,10 @@ fi
 # 环境配置
 echo ""
 echo -e "${YELLOW}[1/4] 启动环境配置...${NC}"
-if [ -f "$SCRIPT_DIR/infrastructure/scripts/configure_env.sh" ]; then
-    bash "$SCRIPT_DIR/infrastructure/scripts/configure_env.sh"
+if [ -f "$SCRIPT_DIR/scripts/configure_env.sh" ]; then
+    bash "$SCRIPT_DIR/scripts/configure_env.sh"
 else
-    echo -e "${RED}错误: 找不到配置脚本 infrastructure/scripts/configure_env.sh${NC}"
+    echo -e "${RED}错误: 找不到配置脚本 scripts/configure_env.sh${NC}"
     echo "请手动创建配置文件或检查项目结构。"
     exit 1
 fi
@@ -100,7 +100,7 @@ if [ -f "$SCRIPT_DIR/../assets_source/leipai_logo.jpg" ]; then
     cp "$SCRIPT_DIR/../assets_source/leipai_logo.jpg" "$INSTALL_DIR/icon.jpg"
 else
     echo "下载默认图标..."
-    wget -q -O "$INSTALL_DIR/icon.png" https://cdn-icons-png.flaticon.com/512/3074/3074767.png
+    wget -q -O "$INSTALL_DIR/icon.jpg" https://cdn-icons-png.flaticon.com/512/3074/3074767.png
 fi
 
 # 设置权限
@@ -113,11 +113,11 @@ echo -e "${YELLOW}[4/4] 创建系统菜单快捷方式...${NC}"
 
 cat <<EOF > "$DESKTOP_FILE"
 [Desktop Entry]
-Name=乐拍视界
+Name=lepai
 Name[zh_CN]=乐拍视界
 Comment=短视频社交平台客户端
 Exec=$INSTALL_DIR/bin/LePaiClient
-Icon=$INSTALL_DIR/icon.png
+Icon=$INSTALL_DIR/icon.jpg
 Terminal=false
 Type=Application
 Categories=AudioVideo;Video;Qt;
