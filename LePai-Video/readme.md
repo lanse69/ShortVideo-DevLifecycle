@@ -23,6 +23,15 @@ chmod +x deploy_system.sh uninstall_system.sh scripts/*.sh
 
 # 3. 运行一键部署工具
 ./deploy_system.sh
+
+# 查看 API 日志
+tail -f /opt/lepai/logs/api.log
+
+# 查看 Worker 日志
+tail -f /opt/lepai/logs/worker.log
+
+# 查看 错误 日志 (如果有报错看这里)
+tail -f /opt/lepai/logs/api_error.log
 ```
 
 ### 3. 按照向导操作
