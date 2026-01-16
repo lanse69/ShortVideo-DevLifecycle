@@ -21,16 +21,16 @@ Rectangle {
                 var video = videoList[i];
                 listModel.append({
                     "videoId": video.id,            // 使用 id 字段
-                    //"userId": video.userId,         // 为空
                     "title": video.title,
                     "url": video.url,
-                    "likeCount": video.likeCount,
                     "coverUrl": video.coverUrl,
                     "description": video.title,
                     //"createdAt": video.createdAt,   // 为空
                     "authorName": video.authorName, // 作者名
                     "authorAvatar": video.authorAvatar ,// 作者头像
                     "isFollowed":video.isFollowed,
+                    "authorId":video.authorId,
+                    "likeCount": video.likeCount,
                     "isLiked" :video.isLiked
                 });
                 console.log("视频:", video);
@@ -53,6 +53,19 @@ Rectangle {
             }
         onLikeFailed: (videoId, errorMessage) => {
             console.log("点赞失败，视频:", videoId, "错误:", errorMessage);
+        }
+
+        onFollowStatusChanged: (authorId, isFollowed) => {
+            // 更新UI中该作者的所有视频的跟随状态
+            for (var i = 0; i < listModel.count; i++) {
+                if (listModel.get(i).authorId === authorId) {
+                    listModel.setProperty(i, "isFollowed", isFollowed);
+                }
+            }
+        }
+
+        onFollowFailed: (authorId, errorMessage) => {
+            console.log("关注失败，作者:", authorId, "错误:", errorMessage);
         }
     }
 
@@ -202,8 +215,12 @@ Rectangle {
                             // 点击切换关注状态
                             TapHandler {
                                 onTapped: {
-                                    followButton.isFollowing = !followButton.isFollowing
-                                    console.log(followButton.isFollowing ? "已关注" : "未关注")
+                                    var authorId = model.authorId;
+                                    var currentFollowed = model.isFollowed;
+                                    var newAction = !currentFollowed;
+
+                                    var token = authManager.getToken();
+                                    browseVideosModelView.followUser(authorId, newAction, token);
 
                                     // 添加点击动画
                                     followAnimation.start()

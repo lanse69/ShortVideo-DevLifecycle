@@ -38,6 +38,8 @@ VideoModel VideoModel::fromJson(const QJsonObject &json) {
     video.m_authorAvatar = json["author_avatar"].toString();
     video.m_isLiked = json["is_liked"].toBool();
     video.m_isFollowed=json["is_followed"].toBool();
+    video.m_authorId = json["author_id"].toString();
+
     qDebug() <<"fromJson m_isLiked:" <<video.m_isLiked;
     qDebug() <<"fromJson m_likeCount:" <<video.m_likeCount;
     return video;
@@ -55,6 +57,7 @@ QJsonObject VideoModel::toJson() const {
     json["author_avatar"] = m_authorAvatar;
     json["is_liked"] = m_isLiked;
     json["is_followed"] = m_isFollowed;
+    json["author_id"] = m_authorId;
     return json;
 }
 
@@ -72,6 +75,7 @@ QVariantMap VideoModel::toVariantMap() const {
     map["authorAvatar"] = m_authorAvatar;
     map["isLiked"] = m_isLiked;
     map["isFollowed"] = m_isFollowed;
+    map["authorId"] = m_authorId;
     qDebug()<<"toVariantMap m_likeCount:" <<m_likeCount;
     qDebug()<<"toVariantMap m_isLiked:" <<m_isLiked;
 

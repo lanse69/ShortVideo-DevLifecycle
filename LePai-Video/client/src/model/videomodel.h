@@ -18,6 +18,9 @@ public:
 
     QString getVideoId() { return m_id; }
 
+    QString getAuthorId() const { return m_authorId; }
+    void setFollowed(bool followed) { m_isFollowed = followed; }
+
     bool isLiked() const { return m_isLiked; }
     void setLiked(bool liked) { m_isLiked = liked;  }
 
@@ -25,8 +28,8 @@ public:
     void setLikeCount(int count) { m_likeCount = count; }
 
 private:
-    QString m_id; 
-    //QString m_userId;   
+    QString m_id;
+    QString m_authorId;
     QString m_title;
     QString m_url;
     QString m_coverUrl;  
