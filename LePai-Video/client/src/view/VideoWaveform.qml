@@ -13,9 +13,9 @@ Rectangle {
     property real duration: 0
     property real position: 0
 
-    onFilePathChanged: updateDisplay()
-    onDurationChanged: updateDisplay()
-    onPositionChanged: updateDisplay()
+    // onFilePathChanged: updateDisplay()
+    // onDurationChanged: updateDisplay()
+    // onPositionChanged: updateDisplay()
 
     // 标题和文件名
     Label {
