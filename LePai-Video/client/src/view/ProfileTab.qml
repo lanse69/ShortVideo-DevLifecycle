@@ -163,21 +163,11 @@ Rectangle {
                     }
             }
 
-            Rectangle {
-                Layout.preferredWidth: 120
-                Layout.preferredHeight: 120
-                radius: 60
-                border.color: "#FFFFFF"
-                border.width: 2
-                Layout.alignment: Qt.AlignHCenter
-                clip: true
-
-                Image {
-                    anchors.fill: parent
-                    anchors.margins: 2 
-                    source: authManager.currentUser.avatarUrl
-                    fillMode: Image.PreserveAspectCrop
-                }
+            Image {
+                Layout.preferredWidth: 100
+                Layout.preferredHeight: 100
+                source: "qrc:/images/images/default.png"
+                fillMode: Image.PreserveAspectCrop
             }
 
             // 用户信息
