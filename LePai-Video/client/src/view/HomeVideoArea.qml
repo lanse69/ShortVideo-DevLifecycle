@@ -36,9 +36,9 @@ Rectangle {
                 console.log("视频:", video);
             }
         }
-        onVideosRequestFailed:{
-            console.log("加载视频失败:", errorMessage);
-        }
+        // onVideosRequestFailed:{
+        //     console.log("加载视频失败:", errorMessage);
+        // }
         onLikeStatusChanged: (videoId, isLiked, likeCount) => {
                 console.log("点赞状态变化，视频:", videoId, "点赞状态:", isLiked, "点赞数:", likeCount);
 
