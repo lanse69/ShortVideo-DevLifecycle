@@ -34,6 +34,7 @@ struct Video {
         v["cover_url"] = coverUrl;
         v["duration"] = duration;
         v["like_count"] = (Json::Int64)likeCount;
+        v["author_id"] = userId;
         v["author"] = authorName;
         v["author_avatar"] = authorAvatar;
         v["is_liked"] = isLiked;
@@ -50,7 +51,12 @@ struct Video {
         video.coverUrl = v.get("cover_url", "").asString();
         video.duration = v.get("duration", 0).asInt();
         video.likeCount = v.get("like_count", 0).asInt64();
-        video.authorName = v.get("author", "").asString();
+        if (v.isMember("author_id")) {
+            video.userId = v["author_id"].asString();
+        } else if (v.isMember("user_id")) {
+            video.userId = v["user_id"].asString();
+        }
+        video.authorName = v.get("author", "Unknown").asString();
         video.authorAvatar = v.get("author_avatar", "").asString();
         video.isLiked = false; // 缓存中不存个性化状态
         video.isFollowed = false;

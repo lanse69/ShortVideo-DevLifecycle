@@ -57,7 +57,6 @@ Rectangle {
         }
     }
 
-    // 使用Loader动态加载组件
     Loader {
         id: pageLoader
         anchors.fill: parent
@@ -74,7 +73,6 @@ Rectangle {
         }
     }
 
-    // 调试：监控步骤切换
     onCurrentStepChanged: {
         console.log("=== 页面切换 ===")
         console.log("当前步骤:", currentStep)

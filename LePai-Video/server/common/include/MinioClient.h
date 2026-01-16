@@ -21,6 +21,9 @@ public:
      */
     std::string uploadFile(const std::string& bucket, const std::string& objectKey, const std::string& localPath, const std::string& publicBaseUrl);
 
+    // 删除文件
+    bool removeFile(const std::string& bucket, const std::string& objectKey);
+
 private:
     std::string endpoint_;
     std::string accessKey_;

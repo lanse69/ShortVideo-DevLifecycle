@@ -31,20 +31,17 @@ VideoModel VideoModel::fromJson(const QJsonObject &json) {
     video.m_id = json["id"].toString();
     video.m_title = json["title"].toString();
     video.m_url = json["url"].toString();
-    video.m_coverUrl = json["cover_url"].toString();  // 注意字段名映射
+    video.m_coverUrl = json["cover_url"].toString();
     video.m_duration = json["duration"].toInt();
-    video.m_likeCount = json["like_count"].toInt();  // JSON 中是整数
-    video.m_authorName = json["author"].toString();  // 服务端返回的是 author
-    video.m_authorAvatar = json["author_avatar"].toString();  // 服务端返回的是 author_avatar
-    video.m_isLiked = json["is_liked"].toBool();  // 注意字段名映射
+    video.m_likeCount = json["like_count"].toInt();
+    video.m_authorName = json["author"].toString();
+    video.m_authorAvatar = json["author_avatar"].toString();
+    video.m_isLiked = json["is_liked"].toBool();
     video.m_isFollowed=json["is_followed"].toBool();
+    video.m_authorId = json["author_id"].toString();
 
-    // 注意：服务端返回的JSON中没有userId和createdAt字段
-    // 这些字段在服务端的Video结构体中有，但toJson()方法没有包含它们
-    // 所以这里我们留空或设置为默认值
-    // video.m_userId = "";
-    // video.m_createdAt = "";
-
+    qDebug() <<"fromJson m_isLiked:" <<video.m_isLiked;
+    qDebug() <<"fromJson m_likeCount:" <<video.m_likeCount;
     return video;
 }
 
@@ -55,11 +52,12 @@ QJsonObject VideoModel::toJson() const {
     json["url"] = m_url;
     json["cover_url"] = m_coverUrl;
     json["duration"] = m_duration;
-    json["like_count"] = static_cast<qint64>(m_likeCount);  // 转换为JSON兼容的整型
+    json["like_count"] = static_cast<qint64>(m_likeCount);
     json["author"] = m_authorName;
     json["author_avatar"] = m_authorAvatar;
     json["is_liked"] = m_isLiked;
     json["is_followed"] = m_isFollowed;
+    json["author_id"] = m_authorId;
     return json;
 }
 
@@ -69,14 +67,17 @@ QVariantMap VideoModel::toVariantMap() const {
     //map["userId"] = m_userId;
     map["title"] = m_title;
     map["url"] = m_url;
-    map["coverUrl"] = m_coverUrl;      // 注意字段名映射
+    map["coverUrl"] = m_coverUrl; 
     map["duration"] = m_duration;
-    map["likeCount"] = m_likeCount;    // QML会自动处理long long到整型的转换
+    map["likeCount"] = m_likeCount; 
     //map["createdAt"] = m_createdAt;
-    map["authorName"] = m_authorName;  // 注意字段名映射
+    map["authorName"] = m_authorName;
     map["authorAvatar"] = m_authorAvatar;
     map["isLiked"] = m_isLiked;
     map["isFollowed"] = m_isFollowed;
+    map["authorId"] = m_authorId;
+    qDebug()<<"toVariantMap m_likeCount:" <<m_likeCount;
+    qDebug()<<"toVariantMap m_isLiked:" <<m_isLiked;
 
     return map;
 }

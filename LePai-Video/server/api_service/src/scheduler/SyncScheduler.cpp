@@ -12,7 +12,6 @@ void SyncScheduler::syncLikesToDB()
     auto redis = drogon::app().getRedisClient();
     auto db = drogon::app().getDbClient("default"); // 用主库写入
 
-    // 安全检查
     if (!redis) {
         LOG_WARN << "[Sync] Redis client not available.";
         return;
@@ -34,19 +33,29 @@ void SyncScheduler::syncLikesToDB()
 
             for (const auto &item : videoIds) {
                 std::string vid = item.asString();
-                // 构造 Key
                 std::string likeKey = "video:likes:" + vid;
 
                 // 获取该视频当前的最新点赞数
                 redis->execCommandAsync(
                     [db, redis, vid](const drogon::nosql::RedisResult &countResult) {
-                        if (countResult.type() == drogon::nosql::RedisResultType::kInteger) {
-                            long long likes = countResult.asInteger();
-                            
+                        long long likes = 0;
+                        bool isValid = false;
+                        if (countResult.type() == drogon::nosql::RedisResultType::kString) {
+                            try {
+                                likes = std::stoll(countResult.asString());
+                                isValid = true;
+                            } catch (...) {
+                                LOG_WARN << "[Sync] Parse error for video " << vid;
+                            }
+                        } else if (countResult.type() == drogon::nosql::RedisResultType::kInteger) {
+                            likes = countResult.asInteger();
+                            isValid = true;
+                        }
+
+                        if (isValid) {
                             db->execSqlAsync(
                                 "UPDATE videos SET like_count = $1 WHERE id = $2",
                                 [redis, vid, likes](const drogon::orm::Result &r){
-                                    // 只有 DB 更新成功后，才从 Redis 脏集合中移除
                                     redis->execCommandAsync(
                                         [](const drogon::nosql::RedisResult&){},
                                         [](const std::exception&){},
@@ -61,9 +70,11 @@ void SyncScheduler::syncLikesToDB()
                                 likes, vid
                             );
                         } else {
-                             LOG_WARN << "[Sync] Invalid redis key type for " << vid;
-                        }
-                    },
+                            if (countResult.type() != drogon::nosql::RedisResultType::kNil) {
+                                    LOG_WARN << "[Sync] Invalid redis key type for " << vid;
+                                }
+                            }
+                        },
                     [vid](const std::exception &e){
                          LOG_ERROR << "[Sync Error] Redis GET failed for " << vid << ": " << e.what();
                     },

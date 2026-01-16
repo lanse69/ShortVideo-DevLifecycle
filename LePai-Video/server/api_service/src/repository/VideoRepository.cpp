@@ -8,7 +8,7 @@ namespace repository {
 
 void VideoRepository::getGlobalFeed(long long limit, long long offset, FeedCallback callback) 
 {
-    // 走从库 "slave"
+    // 走从库
     auto db = drogon::app().getDbClient("slave");
     if (!db) {
         callback({}, "DB slave unavailable");
@@ -37,7 +37,7 @@ void VideoRepository::getGlobalFeed(long long limit, long long offset, FeedCallb
                 lepai::entity::Video v;
                 try {
                     v.id = row["id"].as<std::string>();
-                    v.userId = row["user_id"].as<std::string>();
+                    v.userId = row["user_id"].isNull() ? "" : row["user_id"].as<std::string>();
                     v.title = row["title"].as<std::string>();
                     v.url = row["url"].as<std::string>();
                     v.coverUrl = row["cover_url"].isNull() ? "" : row["cover_url"].as<std::string>();
@@ -83,8 +83,6 @@ void VideoRepository::getLikedVideoIds(const std::string& userId, const std::vec
     }
 
     // 查询这些视频中，哪些被该用户点赞过
-    // user_id = $1
-    // video_id = ANY(string_to_array($2, ','))
     std::string sql = "SELECT video_id FROM video_likes WHERE user_id = $1 AND video_id = ANY(string_to_array($2, ','))";
 
     db->execSqlAsync(
@@ -126,11 +124,9 @@ void VideoRepository::addLikeRecord(const std::string& userId, const std::string
 {
     auto db = drogon::app().getDbClient("default"); // 写主库
     
-    // 使用 ON CONFLICT DO NOTHING 防止重复点赞报错
     db->execSqlAsync(
         "INSERT INTO video_likes (user_id, video_id, created_at) VALUES ($1, $2, NOW()) ON CONFLICT DO NOTHING",
         [callback](const drogon::orm::Result& r) {
-            // affected_rows() == 1 表示插入成功，== 0 表示已经点过赞了
             if (r.affectedRows() > 0) {
                 callback(true, "");
             } else {
@@ -167,7 +163,6 @@ void VideoRepository::removeLikeRecord(const std::string& userId, const std::str
     );
 }
 
-// 获取基准计数
 void VideoRepository::getVideoLikeCount(const std::string& videoId, std::function<void(long long)> callback)
 {
     // 读从库

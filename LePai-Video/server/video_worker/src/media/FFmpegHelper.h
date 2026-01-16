@@ -10,11 +10,10 @@ namespace media {
 class FFmpegHelper {
 public:
     // 获取视频时长（秒）
-    // 支持本地路径或 HTTP URL
     static int getVideoDuration(const std::string& inputPath);
 
     // 截取视频封面
-    // inputPath: 视频路径 (或 URL)
+    // inputPath: 视频路径
     // outputPath: 输出图片路径
     static bool generateThumbnail(const std::string& inputPath, const std::string& outputPath);
 
@@ -31,11 +30,11 @@ public:
 
 private:
     /**
-     * @brief 安全执行外部命令
+     * @brief 执行外部命令
      * @param program 程序名
      * @param args 参数列表
-     * @param output 引用参数，用于接收标准输出内容 (仅当需要获取输出时使用)
-     * @return int 进程退出码 (0表示成功)
+     * @param output 引用参数，用于接收标准输出内容
+     * @return int 进程退出码
      */
     static int runProcess(const std::string& program, const std::vector<std::string>& args, std::string* output = nullptr);
 };

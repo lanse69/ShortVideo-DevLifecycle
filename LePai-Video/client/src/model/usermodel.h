@@ -24,7 +24,7 @@ public:
     int followerCount() const { return m_followerCount; }
     bool isFollowed() const { return m_isFollowed; }
 
-    // 主要功能：从 JSON 更新数据
+    // 从 JSON 更新数据
     void updateFromJson(const QJsonObject &json);
 
     // 清空数据

@@ -1,131 +1,162 @@
 #include "AuthManager.h"
+#include "networkclient.h"
 
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QCryptographicHash>
+#include <QSettings>
 #include <QDebug>
 
 #include "../ConfigManager.h"
 
 AuthManager::AuthManager(QObject *parent) : QObject(parent)
 {
-    m_networkManager = new QNetworkAccessManager(this);
-
-    // 获取 API 地址
-    m_apiBaseUrl = ConfigManager::instance().getApiServerUrl();
-    
-    if (m_apiBaseUrl.isEmpty()) {
-        qWarning() << "API Base URL is empty! Check config.json";
-    }
-
     m_currentUser = new UserModel(this);
+
+    QSettings settings;
+    QString savedToken = settings.value("auth/token").toString();
+
+    if (!savedToken.isEmpty()) {
+        m_token = savedToken;
+        m_wasLogin = true; 
+        
+        qDebug() << "[AuthManager] 检测到本地 Token，正在校验并拉取用户信息...";
+        
+        NetworkClient::instance().getUserInfo(m_token, "", [this](bool success, QJsonObject userData, QString error) {
+            if (success) {
+                qDebug() << "[AuthManager] 自动登录成功，用户:" << userData["username"].toString();
+                m_currentUser->updateFromJson(userData);
+                emit loginSuccess();
+            } else {
+                qWarning() << "[AuthManager] Token 已失效或过期:" << error;
+                logout(); // Token 无效，登出
+            }
+        });
+    } else {
+        qDebug() << "[AuthManager] 未检测到本地 Token";
+    }
 }
 
 void AuthManager::registerUser(const QString &username, const QString &password)
 {
-    QUrl url(m_apiBaseUrl + "/api/user/register");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-
-    // 密码哈希 (SHA256)
-    QByteArray hashBytes = QCryptographicHash::hash(
-        password.toUtf8(), 
-        QCryptographicHash::Sha256
-    );
-    QString hashedPassword = hashBytes.toHex();
-
-    QJsonObject json;
-    json["username"] = username;
-    json["password"] = hashedPassword;
-    
-    QByteArray data = QJsonDocument(json).toJson();
-
-    qDebug() << "Sending register request to:" << url.toString();
-
-    QNetworkReply *reply = m_networkManager->post(request, data);
-
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        if (reply->error() == QNetworkReply::NoError) {
+    NetworkClient::instance().sendRegisterRequest(username, password, [this](bool re, QString message) {
+        if (re) {
             emit registrationSuccess();
         } else {
-            QString errStr = reply->errorString();
-            QByteArray respData = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(respData);
-            if (!doc.isNull() && doc.object().contains("details")) {
-                errStr = doc.object()["details"].toString();
-            } else if (!doc.isNull() && doc.object().contains("message")) {
-                 errStr = doc.object()["message"].toString();
-            }
-            emit registrationFailed(errStr);
+            emit registrationFailed(message);
         }
-        reply->deleteLater();
     });
 }
 
 void AuthManager::login(const QString &username, const QString &password)
 {
-    QUrl url(m_apiBaseUrl + "/api/user/login");
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    NetworkClient::instance().sendLoginRequest(username, password,
+       [this](bool success, QJsonObject response) {
+           if (success) {
+               // 登录成功
+               QString token = response["token"].toString();
+               m_token = token;
 
-    // 注意：需要与注册时使用相同的哈希方式
-    // 如果注册时使用了SHA256哈希，登录时也应该使用相同的哈希
-    QByteArray hashBytes = QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha256);
-    QString hashedPassword = hashBytes.toHex();
+               // 保存 Token 到本地
+               QSettings settings;
+               settings.setValue("auth/token", token);
 
-    QJsonObject json;
-    json["username"] = username;
-    json["password"] = hashedPassword; // 使用哈希后的密码
+               // 更新用户信息
+               if (response.contains("user") && response["user"].isObject()) {
+                   QJsonObject userData = response["user"].toObject();
+                   m_currentUser->updateFromJson(userData);
+               }
 
-    QByteArray data = QJsonDocument(json).toJson();
+               // 更新登录状态
+               m_wasLogin = true;
+               emit loginSuccess();
+               emit wasLoginChanged();
+           } else {
+               // 登录失败
+               QString errorMsg = response["message"].toString("登录失败");
+               emit loginFailed(errorMsg);
+               qDebug() << "登录失败:" << errorMsg;
+           }
+       });
+}
 
-    qDebug() << "Sending login request to:" << url.toString();
+QString AuthManager::getToken() const {
+    return m_token;
+}
 
-    QNetworkReply *reply = m_networkManager->post(request, data);
+void AuthManager::logout()
+{
+    // 如果有token，先发送登出请求到服务器
+    if (!m_token.isEmpty()) {
+        qDebug() << "[AuthManager] 发送登出请求到服务器";
 
-    connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-        if (reply->error() == QNetworkReply::NoError) {
-            QByteArray respData = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(respData);
-            QJsonObject obj = doc.object();
+        NetworkClient::instance().sendLogoutRequest(m_token,
+            [this](bool success, QString error) {
+                if (success) {
+                    qDebug() << "[AuthManager] 服务器登出成功";
 
-            int code = obj["code"].toInt();
-            if (code == 200) {
-                // 登录成功
-                QString token = obj["token"].toString();
-                QJsonObject userData;
-                // 保存token
-                m_token = token;
+                    // 执行本地登出
+                    performLocalLogout();
 
-                // 更新用户信息
-                if (obj.contains("user") && obj["user"].isObject()) {
-                    userData = obj["user"].toObject();
-                    m_currentUser->updateFromJson(userData);
+                    // 发射登出成功信号
+                    emit logoutSuccess();
+                } else {
+                    qWarning() << "[AuthManager] 服务器登出失败:" << error;
+                    // 发射登出失败信号
+                    performLocalLogout();
+                    emit logoutFailed(error);
                 }
-                // 可选：将token保存到本地存储（如QSettings）
-                // QSettings settings;
-                // settings.setValue("auth/token", token);
-                emit loginSuccess();
-            } else {
-                // 登录失败
-                QString message = obj["message"].toString();
-                emit loginFailed(message);
-            }
+            });
+    } else {
+        // 如果没有token，只执行本地登出
+        qDebug() << "[AuthManager] 本地登出（无token）";
+        performLocalLogout();
+        // 没有token，直接认为登出成功
+        emit logoutSuccess();
+    }
+}
+
+void AuthManager::performLocalLogout()
+{
+    m_token.clear();
+    m_wasLogin = false;
+
+    // 清除本地保存的 token
+    QSettings settings;
+    settings.remove("auth/token");
+
+    // 清除用户信息
+    if (m_currentUser) {
+        m_currentUser->clear();
+    }
+
+    qDebug() << "[AuthManager] 本地登出完成";
+
+    // 发出状态变化信号
+    emit wasLoginChanged();
+    emit currentUserChanged();
+}
+
+void AuthManager::refreshUserInfo()
+{
+    if (m_token.isEmpty()) {
+        qWarning() << "[AuthManager] 无法刷新用户信息：Token为空";
+        return;
+    }
+
+    qDebug() << "[AuthManager] 开始刷新用户信息...";
+
+    NetworkClient::instance().getUserInfo(m_token, "", [this](bool success, QJsonObject userData, QString error) {
+        if (success) {
+            qDebug() << "[AuthManager] 用户信息刷新成功，用户:" << userData["username"].toString();
+            m_currentUser->updateFromJson(userData);
+            emit userInfoRefreshed();
+            emit currentUserChanged(); // 通知UI用户信息已更新
         } else {
-            // 网络错误
-            QString errStr = reply->errorString();
-            QByteArray respData = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(respData);
-            if (!doc.isNull()) {
-                QJsonObject obj = doc.object();
-                if (obj.contains("message")) {
-                    errStr = obj["message"].toString();
-                }
-            }
-            emit loginFailed(errStr);
+            qWarning() << "[AuthManager] 刷新用户信息失败:" << error;
         }
-        reply->deleteLater();
     });
 }
+

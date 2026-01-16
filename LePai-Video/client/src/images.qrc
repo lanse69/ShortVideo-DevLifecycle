@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>../images/like.png</file>
+        <file>../images/liked.png</file>
+        <file>../images/homeIng.png</file>
+        <file>../images/personal.png</file>
+        <file>../images/publish.png</file>
+        <file>../images/pause.png</file>
+        <file>../images/play.png</file>
+        <file>../images/default.png</file>
+    </qresource>
+</RCC>

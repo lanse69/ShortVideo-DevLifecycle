@@ -10,7 +10,7 @@ public:
     VideoModel(const QString& id,  const QString& title,
                const QString& url, const QString& coverUrl, int duration,
                long long likeCount,
-               const QString& authorName, const QString& authorAvatar, bool isLiked = false);
+               const QString& authorName, const QString& authorAvatar, bool isLiked,bool isFollowed);
 
     static VideoModel fromJson(const QJsonObject &json);
     QJsonObject toJson() const;
@@ -18,17 +18,26 @@ public:
 
     QString getVideoId() { return m_id; }
 
+    QString getAuthorId() const { return m_authorId; }
+    void setFollowed(bool followed) { m_isFollowed = followed; }
+
+    bool isLiked() const { return m_isLiked; }
+    void setLiked(bool liked) { m_isLiked = liked;  }
+
+    int likeCount() const { return m_likeCount; }
+    void setLikeCount(int count) { m_likeCount = count; }
+
 private:
-    QString m_id;            // 对应服务端 id
-    //QString m_userId;        // 对应服务端 userId
+    QString m_id;
+    QString m_authorId;
     QString m_title;
     QString m_url;
-    QString m_coverUrl;      // 对应服务端 coverUrl
+    QString m_coverUrl;  
     int m_duration;
     long long m_likeCount;
     //QString m_createdAt;
-    QString m_authorName;    // 对应服务端 author
-    QString m_authorAvatar;  // 对应服务端 author_avatar
+    QString m_authorName;  
+    QString m_authorAvatar; 
     bool m_isLiked;
     bool m_isFollowed;
 };

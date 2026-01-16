@@ -47,7 +47,7 @@ public:
     // currentUserId: 当前登录用户 ID
     void getUserProfile(const std::string& targetUserId, const std::string& currentUserId, std::function<void(const std::optional<lepai::entity::User>&, const std::string& err)> callback);
 
-    // 修改用户名业务
+    // 修改用户名
     void changeUsername(const std::string& userId, const std::string& newName, std::function<void(bool success, const std::string& msg)> callback);
 
 private:

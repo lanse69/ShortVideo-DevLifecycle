@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <atomic>
 #include <memory>
+#include <sstream>
 
 namespace lepai {
 namespace service {
@@ -16,7 +17,7 @@ RecommendationService::RecommendationService() {
 
 void RecommendationService::getDiscoveryFeed(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 
 {
-    // 策略：只有第一页(offset=0)走 Redis 缓存
+    // 只有第一页(offset=0)走 Redis 缓存
     // 后续页走 DB
     if (offset > 0) {
         fetchFromDb(userId, limit, offset, callback);
@@ -39,7 +40,7 @@ void RecommendationService::getDiscoveryFeed(const std::string& userId, int limi
                         for (const auto& item : root) {
                             videos.push_back(lepai::entity::Video::fromJson(item));
                         }
-                        // 拿到基础数据后，填充个性化数据
+                        // 填充个性化数据
                         enrichUserData(userId, videos, callback);
                         return;
                     }
@@ -64,23 +65,21 @@ void RecommendationService::fetchFromDb(const std::string& userId, int limit, in
             return;
         }
 
-        // 如果当前页没数据，且不是第一页，说明滑到底了。
-        // 自动降级：重新从 offset = 0 开始查。
+        // 如果当前页没数据，且不是第一页，则滑到底了
         if (videos.empty() && offset > 0) {
             LOG_INFO << "Feed reached end (offset " << offset << "), restarting from 0.";
-            // 递归调用自己，但强制 offset 为 0
             fetchFromDb(userId, limit, 0, callback);
             return;
         }
 
-        // 仅对第一页进行缓存回写 (Write Back)
+        // 仅对第一页进行缓存回写
         if (offset == 0 && !videos.empty()) {
             Json::Value arr(Json::arrayValue);
             for (const auto& v : videos) arr.append(v.toJson());
             Json::FastWriter writer;
             std::string jsonStr = writer.write(arr);
 
-            // 缓存 15 秒，避免数据陈旧
+            // 缓存 15 秒
             auto redis = drogon::app().getRedisClient();
             redis->execCommandAsync(
                 [](const drogon::nosql::RedisResult&){}, 
@@ -96,80 +95,133 @@ void RecommendationService::fetchFromDb(const std::string& userId, int limit, in
 // 填充个性化数据
 void RecommendationService::enrichUserData(const std::string& userId, std::vector<lepai::entity::Video> videos, lepai::repository::VideoRepository::FeedCallback callback) 
 {
-    // 快速失败检查
-    if (userId.empty() || videos.empty()) {
+    if (videos.empty()) {
         callback(videos, "");
         return;
     }
 
-    // 提取视频 ID 列表
-    std::vector<std::string> videoIds;
-    videoIds.reserve(videos.size());
-    for (const auto& v : videos) videoIds.push_back(v.id);
-
-    // 提取作者 ID 列表 (去重)
-    std::vector<std::string> authorIds;
-    authorIds.reserve(videos.size());
-    for (const auto& v : videos) {
-        if (!v.userId.empty() && v.userId != userId) {
-            authorIds.push_back(v.userId);
-        }
-    }
-    std::sort(authorIds.begin(), authorIds.end());
-    auto last = std::unique(authorIds.begin(), authorIds.end());
-    authorIds.erase(last, authorIds.end());
-
-    // 定义共享上下文
+    // 上下文结构
     struct EnrichContext {
-        // 结果容器
-        std::vector<std::string> likedVideoIds;
-        std::vector<std::string> followingUserIds;
-        
-        // 原始数据
+        // 最终结果
         std::vector<lepai::entity::Video> finalVideos;
         
-        // 计数器 (等待 2 个任务)
-        std::atomic<int> pendingTasks{2};
+        // 结果缓存
+        std::vector<std::string> likedVideoIds;      // 用户点赞过的视频ID
+        std::vector<std::string> followingUserIds;   // 用户关注过的作者ID
+        std::vector<long long> realTimeLikes;        // Redis中的实时点赞数 (-1表示Redis无记录)
+
+        // 计数器：等待 3 个任务完成 (点赞状态、关注状态、实时计数)
+        std::atomic<int> pendingTasks{3};
         
-        // 最终回调
+        // 回调
         lepai::repository::VideoRepository::FeedCallback doneCallback;
     };
 
-    auto ctx = std::make_shared<EnrichContext>(); // 使用 shared_ptr 保证上下文在所有回调结束前一直存活
+    auto ctx = std::make_shared<EnrichContext>();
     ctx->finalVideos = std::move(videos); // 转移所有权
     ctx->doneCallback = callback;
+    // 初始化实时点赞数为 -1
+    ctx->realTimeLikes.resize(ctx->finalVideos.size(), -1);
 
-    // 定义合并逻辑
+    // 当所有任务完成时调用
     auto tryFinalize = [ctx]() {
-        // 只有当计数器减为 0 时，才执行合并
-        // fetch_sub 返回减之前的值，所以如果返回 1，说明减完是 0
         if (ctx->pendingTasks.fetch_sub(1) == 1) {
             
             std::unordered_set<std::string> likedSet(ctx->likedVideoIds.begin(), ctx->likedVideoIds.end());
             std::unordered_set<std::string> followingSet(ctx->followingUserIds.begin(), ctx->followingUserIds.end());
 
-            for (auto& v : ctx->finalVideos) {
-                if (likedSet.count(v.id)) v.isLiked = true;
-                if (followingSet.count(v.userId)) v.isFollowed = true;
-                else v.isFollowed = false;
+            for (size_t i = 0; i < ctx->finalVideos.size(); ++i) {
+                auto& v = ctx->finalVideos[i];
+
+                // 填充“已点赞”状态
+                if (likedSet.count(v.id)) {
+                    v.isLiked = true;
+                }
+
+                // 填充“已关注”状态
+                if (followingSet.count(v.userId)) {
+                    v.isFollowed = true;
+                }
+                else {
+                    v.isFollowed = false;
+                }
+
+                // 修正点赞数
+                if (ctx->realTimeLikes[i] >= 0) {
+                    v.likeCount = ctx->realTimeLikes[i];
+                }
             }
 
-            // 执行最终回调
             ctx->doneCallback(ctx->finalVideos, "");
         }
     };
 
-    // 查询点赞
-    videoRepo->getLikedVideoIds(userId, videoIds, [ctx, tryFinalize](const std::vector<std::string>& ids, const std::string&) {
-        ctx->likedVideoIds = ids;
-        tryFinalize();
-    });
+    // 查询“是否点赞”状态
+    if (!userId.empty()) {
+        std::vector<std::string> videoIds;
+        videoIds.reserve(ctx->finalVideos.size());
+        for (const auto& v : ctx->finalVideos) videoIds.push_back(v.id);
 
-    // 查询关注
-    userRepo->getFollowingIds(userId, authorIds, [ctx, tryFinalize](const std::vector<std::string>& ids) {
-        ctx->followingUserIds = ids;
+        videoRepo->getLikedVideoIds(userId, videoIds, [ctx, tryFinalize](const std::vector<std::string>& ids, const std::string&) {
+            ctx->likedVideoIds = ids;
+            tryFinalize();
+        });
+    } else {
+        tryFinalize(); // 游客直接标记任务完成
+    }
+
+    // 查询“是否关注”状态
+    if (!userId.empty()) {
+        std::vector<std::string> authorIds;
+        for (const auto& v : ctx->finalVideos) {
+            // 排除空ID和自己
+            if (!v.userId.empty() && v.userId != userId) {
+                authorIds.push_back(v.userId);
+            }
+        }
+        userRepo->getFollowingIds(userId, authorIds, [ctx, tryFinalize](const std::vector<std::string>& ids) {
+            ctx->followingUserIds = ids;
+            tryFinalize();
+        });
+    } else {
         tryFinalize();
-    });
+    }
+
+    // 查询 Redis 实时点赞数
+    auto redis = drogon::app().getRedisClient();
+    if (redis && !ctx->finalVideos.empty()) {
+        std::string command = "MGET";
+        for (const auto& v : ctx->finalVideos) {
+            command += " video:likes:" + v.id;
+        }
+
+        redis->execCommandAsync(
+            [ctx, tryFinalize](const drogon::nosql::RedisResult& r) {
+                if (r.type() == drogon::nosql::RedisResultType::kArray) {
+                    auto resArr = r.asArray();
+                    for (size_t i = 0; i < resArr.size() && i < ctx->realTimeLikes.size(); ++i) {
+                        if (resArr[i].type() != drogon::nosql::RedisResultType::kNil) {
+                            try {
+                                // ctx->realTimeLikes[i] = resArr[i].asInteger();
+                                ctx->realTimeLikes[i] = std::stoll(resArr[i].asString());
+                            } catch (...) {
+                                LOG_ERROR << "Invalid number format in Redis for video: " << ctx->finalVideos[i].id;
+                                ctx->realTimeLikes[i] = -1;
+                            }
+                        }
+                    }
+                }
+                tryFinalize();
+            },
+            [tryFinalize](const std::exception& e) {
+                LOG_ERROR << "Redis MGET Likes Error: " << e.what();
+                tryFinalize(); // 降级显示 DB 数据
+            },
+            command.c_str() 
+        );
+    } else {
+        tryFinalize();
+    }
 }
 
 void RecommendationService::getFollowingFeed(const std::string& userId, int limit, int offset, lepai::repository::VideoRepository::FeedCallback callback) 

@@ -59,8 +59,7 @@ mc mb myminio/temp --ignore-existing;
 
 echo '[3/4] 设置访问策略...'
 mc anonymous set download myminio/public;
-mc anonymous set upload myminio/temp
-mc anonymous set download myminio/temp
+mc anonymous set public myminio/temp
 
 echo '[4/4] 上传默认资源...'
 mc cp /assets/default.png myminio/public/defaults/default.png;

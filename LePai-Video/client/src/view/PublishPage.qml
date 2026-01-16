@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import LePaiClient
+import QtQuick.Dialogs
 
 Rectangle {
     id: root
@@ -132,42 +134,108 @@ Rectangle {
                     console.log("5. 是否合并过:", videoData.hasMerged)
                     console.log("6. 是否有音乐:", videoData.hasMusic)
 
-                    // 清理临时文件（如果存在且需要清理）
-                    cleanupTempFile()
+                    var token = authManager.getToken()
+                    videoPublisher.publishVideo(videoData.videoPath, descriptionArea.text, token)
 
-                    console.log("发布流程完成（模拟）")
-                    root.publishComplete()
+                    //root.publishComplete()
                 }
             }
+        }
+    }
+    // 在 VideoPublisher 组件后添加成功对话框
+    Dialog {
+        id: publishSuccessDialog
+        title: "发布成功"
+        modal: true
+        standardButtons: Dialog.Ok
+        width: 300
+        height: 150
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+
+        background: Rectangle {
+            color: "#2d2d2d"
+            radius: 10
+            border.color: "#50c878"
+            border.width: 2
+        }
+
+        contentItem: Column {
+            anchors.fill: parent
+            anchors.margins: 15
+            spacing: 15
+
+            Text {
+                text: "视频发布成功！"
+                color: "#50c878"
+                font.pixelSize: 16
+                font.bold: true
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+            }
+
+            Text {
+                text: "您的视频已成功上传\n即将返回首页..."
+                color: "white"
+                font.pixelSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                width: parent.width
+                wrapMode: Text.Wrap
+            }
+        }
+
+        onAccepted: {
+            // 跳转到首页
+            console.log("发布成功，跳转到首页")
+            root.publishComplete()
+        }
+    }
+
+    // 在 VideoPublisher 的 onPublishSuccess 信号处理中
+    VideoPublisher {
+        id: videoPublisher
+        onPublishSuccess: {
+            console.log("发布成功，显示成功对话框")
+            cleanupTempFile()
+            publishSuccessDialog.open()
+
+            // 跳转到首页
+            publishSuccessTimer.start()
+        }
+    }
+
+    // 添加一个定时器来延迟显示成功对话框
+    Timer {
+        id: publishSuccessTimer
+        interval: 1500  // 延迟
+        onTriggered: {
+            contentRoot.currentTab = 0
+             _bottomBar.currentIndex = 0
         }
     }
 
     // 清理临时文件的函数
     function cleanupTempFile() {
-        console.log("=== 清理临时文件检查 ===")
-
         // 确保有有效的临时文件路径
         if (!videoData.tempFilePath || videoData.tempFilePath === "") {
-            console.log("✓ 没有临时文件需要清理")
+            console.log("没有临时文件需要清理")
             return
         }
 
         // 确保临时文件存在
         if (!fileutils || !fileutils.fileExists(videoData.tempFilePath)) {
-            console.log("✓ 临时文件不存在，无需清理:", videoData.tempFilePath)
+            console.log("临时文件不存在，无需清理:", videoData.tempFilePath)
             return
         }
 
-        // 安全保护：确保不是原视频
         if (videoData.originalVideoPath &&
             videoData.tempFilePath === videoData.originalVideoPath) {
-            console.log("⚠️ 安全保护：临时文件路径与原视频相同，不删除")
+            console.log("安全保护：临时文件路径与原视频相同，不删除")
             return
         }
 
-        // 确保确实合并过
         if (!videoData.hasMerged) {
-            console.log("⚠️ 未合并过，不删除临时文件")
+            console.log("未合并过，不删除临时文件")
             return
         }
 
@@ -175,20 +243,28 @@ Rectangle {
 
         // 删除临时文件
         if (fileutils.deleteFile(videoData.tempFilePath)) {
-            console.log("✓ 临时文件删除成功")
+            console.log("临时文件删除成功")
 
             // 获取临时文件所在目录
             var tempDir = fileutils.getFileDirectory(videoData.tempFilePath)
             console.log("临时文件目录:", tempDir)
 
+            // 尝试删除空目录（如果是临时目录的话）
+            if (tempDir && tempDir.includes("_merged_videos")) {
+                if (fileutils.deleteDirectory(tempDir)) {
+                    console.log("空目录删除成功")
+                } else {
+                    console.log("目录不为空或删除失败")
+                }
+            }
+
         } else {
-            console.log("✗ 临时文件删除失败")
+            console.log("临时文件删除失败")
         }
 
-        // 确认原视频安全
         if (videoData.originalVideoPath &&
             fileutils.fileExists(videoData.originalVideoPath)) {
-            console.log("✓ 原视频安全:", fileutils.getFileName(videoData.originalVideoPath))
+            console.log("原视频安全:", fileutils.getFileName(videoData.originalVideoPath))
         }
     }
 }

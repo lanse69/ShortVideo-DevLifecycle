@@ -8,7 +8,6 @@ RowLayout {
     Layout.fillWidth: true
     spacing: 0
 
-    // 信号：当页面切换时发出
     signal bottomButtonChanged(int pageIndex)  // 0=首页，1=朋友，2=创建作品，3=个人空间
 
     // 当前选中的按钮索引
@@ -24,11 +23,11 @@ RowLayout {
             anchors.centerIn: parent
             spacing: 4
 
-            Text {
-                text: "🏠"
-                color: "#FF0050"
-                font.pixelSize: 24
+            Image {
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter
+                source: "qrc:/images/images/homeIng.png"
             }
 
             Text {
@@ -49,7 +48,7 @@ RowLayout {
         }
     }
 
-    // 发布按钮（特殊处理，不改变currentIndex）
+    // 发布按钮
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 60
@@ -83,10 +82,10 @@ RowLayout {
             anchors.centerIn: parent
             spacing: 4
 
-            Text {
-                text: "👤"
-                color: "#FF0050"
-                font.pixelSize: 24
+            Image {
+                source: "qrc:/images/images/personal.png"
+                Layout.preferredWidth: 24
+                Layout.preferredHeight: 24
                 Layout.alignment: Qt.AlignHCenter
             }
 

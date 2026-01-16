@@ -2,9 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtMultimedia
 
-Item {
-    // width: 800
-    // height: 600
+Rectangle {
+    color: "#000000"
     visible: true
     property alias playerSource: mediaPlayer.source
     property alias mediaPlayer: mediaPlayer

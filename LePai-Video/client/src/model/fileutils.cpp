@@ -37,7 +37,7 @@ QString FileUtils::generateMergedFileName(const QString &videoPath)
     }
 
     QFileInfo fileInfo(videoPath);
-    QString baseName = fileInfo.baseName();  // 不带扩展名的文件名
+    QString baseName = fileInfo.baseName();
 
     // 使用当前日期（格式：yyyyMMdd）
     QString dateStr = QDateTime::currentDateTime().toString("yyyyMMdd");
@@ -73,6 +73,19 @@ bool FileUtils::fileExists(const QString &filePath)
 bool FileUtils::deleteFile(const QString &filePath)
 {
     return QFile::remove(filePath);
+}
+
+bool FileUtils::deleteDirectory(const QString &dirPath)
+{
+    QDir dir(dirPath);
+
+    if (!dir.exists()) {
+        qDebug() << "目录不存在:" << dirPath;
+        return true; // 目录不存在可以认为是删除成功
+    }
+
+    // 递归删除目录及其内容
+    return dir.removeRecursively();
 }
 
 QString FileUtils::getFileDirectory(const QString &filePath)

@@ -8,58 +8,89 @@ Rectangle {
     color: "#000000"
     property bool isFavorited: true
 
-    // Item {
-    //     id: broseVideoViewModel
-
-    //     function getVideos()
-    //     {
-    //          return [
-    //             {
-    //                 title:"zhoujun",
-    //                 url:"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"1111"
-    //             },
-    //             {
-    //                 title :"zhu",
-    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"2"
-    //             },
-    //             {
-    //                 title :"a",
-    //                 url :"file:///root/tmp/Linux Directories Explained in 100 Seconds.mp4",
-    //                 description:"3"
-    //             },
-    //         ]
-    //     }
-    // }
-
+    function getCurrentToken() {
+        return authManager ? authManager.getToken() : ""
+    }
 
     BrowseVideosModelView {
         id: browseVideosModelView
-        onVideosLoaded: {
+        onVideosLoaded: (videoList)=>{
             console.log("收到视频数据，数量:", videoList.length);
             // 将新视频添加到ListModel
             for (var i = 0; i < videoList.length; i++) {
                 var video = videoList[i];
-                videoListModel.append({
+                listModel.append({
                     "videoId": video.id,            // 使用 id 字段
-                    //"userId": video.userId,         // 可能为空
                     "title": video.title,
                     "url": video.url,
-                    "likeCount": video.likeCount,
-                    "coverUrl": video.coverUrl,     // 使用 coverUrl 字段
-                    "description": video.title,     // 描述可以用标题替代，因为没有description字段
-                    //"createdAt": video.createdAt,   // 可能为空
+                    "coverUrl": video.coverUrl,
+                    "description": video.title,
+                    //"createdAt": video.createdAt,   // 为空
                     "authorName": video.authorName, // 作者名
-                    "authorAvatar": video.authorAvatar // 作者头像
+                    "authorAvatar": video.authorAvatar ,// 作者头像
+                    "isFollowed":video.isFollowed,
+                    "authorId":video.authorId,
+                    "likeCount": video.likeCount,
+                    "isLiked" :video.isLiked
                 });
+                console.log("视频:", video);
             }
         }
-        onVideosRequestFailed:{
-            console.log("加载视频失败:", errorMessage);
+        // onVideosRequestFailed:{
+        //     console.log("加载视频失败:", errorMessage);
+        // }
+        onLikeStatusChanged: (videoId, isLiked, likeCount) => {
+                console.log("点赞状态变化，视频:", videoId, "点赞状态:", isLiked, "点赞数:", likeCount);
+
+                // 更新 ListModel 中对应的视频项
+                for (var i = 0; i < listModel.count; i++) {
+                    if (listModel.get(i).videoId === videoId) {
+                        listModel.setProperty(i, "isLiked", isLiked);
+                        listModel.setProperty(i, "likeCount", likeCount);
+                        console.log("更新视频", videoId, "点赞数:", likeCount, "点赞状态:", isLiked);
+                    }
+                }
+            }
+        onLikeFailed: (videoId, errorMessage) => {
+            console.log("点赞失败，视频:", videoId, "错误:", errorMessage);
+        }
+
+        onFollowStatusChanged: (authorId, isFollowed) => {
+            // 更新UI中该作者的所有视频的跟随状态
+            for (var i = 0; i < listModel.count; i++) {
+                if (listModel.get(i).authorId === authorId) {
+                    listModel.setProperty(i, "isFollowed", isFollowed);
+                }
+            }
+            refreshUserInfoTimer.start();
+        }
+
+        onFollowFailed: (authorId, errorMessage) => {
+            console.log("关注失败，作者:", authorId, "错误:", errorMessage);
         }
     }
 
+    Timer {
+        id: initTimer
+        interval: 10
+        repeat: false
+        onTriggered: {
+             console.log("初始化加载视频，Token:", getCurrentToken())
+             browseVideosModelView.requestVideos(getCurrentToken())
+        }
+    }
+
+    Timer {
+        id: refreshUserInfoTimer
+        interval: 300 // 0.3秒
+        repeat: false
+        onTriggered: {
+            console.log("开始刷新当前用户信息...");
+            if (authManager && authManager.wasLogin) {
+                authManager.refreshUserInfo();
+            }
+        }
+    }
 
     ListView {
         id: videoListView
@@ -73,12 +104,8 @@ Rectangle {
         // 滑到底部提示
         property bool atBottomEnd: false
         onMovementEnded: {
-            // // 检查是否滑到底部
-            // if (contentY + height > contentHeight - 50) {
-            //     listModel.getVideos()
-            // }
             if (contentY + height > contentHeight - 50) {
-                browseVideosModelView.requestVideos();
+                browseVideosModelView.requestVideos(getCurrentToken());
             }
         }
 
@@ -86,26 +113,9 @@ Rectangle {
         model:ListModel {
             id:listModel
             Component.onCompleted: {
-                browseVideosModelView.requestVideos();
+                initTimer.start()
             }
         }
-
-        //     ListModel {
-        //     id:listModel
-        //     Component.onCompleted: {
-        //         getVideos()
-        //     }
-        //     function getVideos(){
-        //         var videos = broseVideoViewModel.getVideos()
-        //         for(let i = 0; i < videos.length; i++) {
-        //             append({
-        //                        "title": videos[i].title,
-        //                        "source": videos[i].url,
-        //                        "description": videos[i].description
-        //                    })
-        //         }
-        //     }
-        // }
 
         delegate: Item {
             id: videoItem
@@ -136,7 +146,7 @@ Rectangle {
                     id: currentPlayer
                     width: videoListView.width
                     height: videoListView.height
-                    playerSource:model.source
+                    playerSource:model.url
                     property bool shouldPlay: index==videoListView.currentIndex && videoListView.visible
                     onShouldPlayChanged: {
                         if (shouldPlay) {
@@ -202,9 +212,10 @@ Rectangle {
                             border.color: "#FFFFFF"
                             border.width: 2
                             opacity: videoItem.avatarOpacity
+                            visible: model.authorId===authManager.currentUser.id? false:true
 
                             // 状态：true=已关注（显示减号），false=未关注（显示加号）
-                            property bool isFollowing: false
+                            property bool isFollowing: model.isFollowed
 
                             Text {
                                 id: followText
@@ -218,8 +229,12 @@ Rectangle {
                             // 点击切换关注状态
                             TapHandler {
                                 onTapped: {
-                                    followButton.isFollowing = !followButton.isFollowing
-                                    console.log(followButton.isFollowing ? "已关注" : "未关注")
+                                    var authorId = model.authorId;
+                                    var currentFollowed = model.isFollowed;
+                                    var newAction = !currentFollowed;
+
+                                    var token = authManager.getToken();
+                                    browseVideosModelView.followUser(authorId, newAction, token);
 
                                     // 添加点击动画
                                     followAnimation.start()
@@ -252,21 +267,37 @@ Rectangle {
                         spacing: 5
                         Layout.alignment: Qt.AlignHCenter
 
-                        Text {
+                        Image {
                             id: loveText
-                            text: "❤️"
-                            color: "#FF0050"  // 红色表示已喜欢
-                            font.pixelSize: 40
+                            Layout.preferredWidth: 40
+                            Layout.preferredHeight: 40
                             Layout.alignment: Qt.AlignHCenter
+
+                            // 使用路径变量
+                            property string likedPath: "qrc:/images/images/liked.png"
+                            property string likePath: "qrc:/images/images/like.png"
+
+                            // 初始显示红色实心
+                            source: model.isLiked ? likedPath : likePath
                             opacity: videoItem.avatarOpacity
 
                             // 点击事件
                             TapHandler {
                                 onTapped: {
-                                    if (loveText.text === "❤️"){ loveText.text = "🤍"}
-                                        else loveText.text = "❤️"
+                                    var videoId = model.videoId;
+                                    var currentLiked = model.isLiked;
+                                    var newAction = !currentLiked;  // 取反：点赞变取消，取消变点赞
+
+                                    // 从 AuthManager 获取 token
+                                    var token = authManager.getToken();
+
+                                    // 调用点赞方法
+                                    browseVideosModelView.likeVideo(videoId, newAction, token);
+
                                     // 添加点击动画
-                                    lovefollowAnimation.start()
+                                    lovefollowAnimation.start();
+
+                                    console.log("点击点赞，视频ID:", videoId, "新状态:", newAction);
                                 }
                             }
                             // 点赞/取消关注动画
@@ -290,7 +321,7 @@ Rectangle {
 
                         Text {
                             id: likeCount
-                            text: "9.1w"
+                            text: model.likeCount
                             color: "#FFFFFF"
                             font.pixelSize: 12
                             opacity: videoItem.avatarOpacity
@@ -313,7 +344,7 @@ Rectangle {
                     // 用户名
                     Text {
                         id: usernameText
-                        //text: username
+                        text: model.authorName
                         color: "#FFFFFF"
                         font.pixelSize: 16
                         font.bold: true
@@ -323,7 +354,7 @@ Rectangle {
                     // 视频描述
                     Text {
                         id: descriptionText
-                        text: description
+                        text: model.title
                         color: "#FFFFFF"
                         font.pixelSize: 14
                         Layout.maximumWidth: 280

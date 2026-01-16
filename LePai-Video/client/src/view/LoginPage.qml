@@ -5,50 +5,73 @@ import QtQuick.Layouts
 Rectangle {
     id: loginPage
     color: "#ffffff"
-    radius: 20
+    radius: 12
 
+    property alias usernametext:usernameInput.text
+    property alias passwordtext:passwordInput.text
     property bool showRegisterPage: false
-    //property alias _errorText:errorText
-
     signal closeRequested()
+
+    Connections {
+        target: authManager
+        function onLoginSuccess() {
+            console.log("[LoginPage] 登录成功，自动关闭窗口")
+            // 延迟一会
+            closeTimer.start()
+        }
+    }
+
+    Timer {
+        id: closeTimer
+        interval: 300 // 0.3秒后关闭
+        repeat: false
+        onTriggered: {
+            loginPage.closeRequested()
+        }
+    }
+
     // 右上角关闭按钮
-   Button {
-       anchors.right: parent.right
-       anchors.top: parent.top
-       anchors.margins: 15
-       width: 30
-       height: 30
-       text: "×"
-       font.pixelSize: 24
-       font.bold: true
+    Button {
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.margins: 15
+        width: 30
+        height: 30
+        text: "×"
+        font.pixelSize: 24
+        font.bold: true
 
-       background: Rectangle {
-           color: "transparent"
-       }
+        background: Rectangle {
+            color: "transparent"
+        }
 
-       contentItem: Text {
-           text: parent.text
-           font: parent.font
-           color: "#95a5a6"
-           horizontalAlignment: Text.AlignHCenter
-           verticalAlignment: Text.AlignVCenter
-       }
+        contentItem: Text {
+            text: parent.text
+            font: parent.font
+            color: "#95a5a6"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
 
-       onClicked: {
-           console.log("点击了关闭按钮")
-           closeRequested()
-       }
-   }
-   //注册界面
-   RegisterPage{
-       id:registerPage
-      anchors.fill: parent
-      visible: showRegisterPage
-      z:parent.z+1
-      onClose: {
-         showRegisterPage=false
-      }
-   }
+        onClicked: {
+            console.log("点击了关闭按钮")
+            closeRequested()
+        }
+    }
+
+    // 注册界面
+    RegisterPage {
+        id: registerPage
+        anchors.fill: parent
+        visible: showRegisterPage
+        z: parent.z + 10
+        
+        onClose: {
+            showRegisterPage = false
+            // 清空登录页的错误信息
+            authManager.loginMassage = "" 
+        }
+    }
 
     ColumnLayout {
         anchors.centerIn: parent
@@ -59,8 +82,7 @@ Rectangle {
         ColumnLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 12
-
-            // 主标题
+             // 主标题
             Text {
                 text: "乐拍视界"
                 font.pixelSize: 32
@@ -84,7 +106,7 @@ Rectangle {
                 anchors.fill: parent
                 anchors.margins: 30
                 spacing: 20
-
+                
                 // 账号输入框
                 ColumnLayout {
                     spacing: 6
@@ -115,10 +137,12 @@ Rectangle {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                            leftPadding: 12
                         }
                     }
                 }
 
+                // 密码输入框
                 ColumnLayout {
                     spacing: 6
                     Layout.fillWidth: true
@@ -145,8 +169,7 @@ Rectangle {
                             anchors.verticalCenter: parent.verticalCenter
                             width: 30
                             height: 30
-                            text: passwordInput.echoMode === TextField.Password ? "👁️" : "👁️‍🗨️"
-                            // 关键：设置初始不透明度，然后立即显示
+                            text: passwordInput.echoMode === TextField.Password ? "显示" : "隐藏"
                             opacity: 0
                             Component.onCompleted: opacity = 1
 
@@ -166,7 +189,7 @@ Rectangle {
                         TextField {
                             id: passwordInput
                             anchors.fill: parent
-                            anchors.rightMargin: 40  // 给眼睛留空间
+                            anchors.rightMargin: 40
                             leftPadding: 12
                             rightPadding: 40
                             font.pixelSize: 16
@@ -176,15 +199,18 @@ Rectangle {
                             background: Rectangle {
                                 color: "transparent"
                             }
+                            echoMode: TextField.Password
                             verticalAlignment: TextInput.AlignVCenter
                         }
                     }
                 }
-                RowLayout{
+
+                RowLayout {
+                    spacing: 15
                     // 登录按钮
                     Button {
                         id: loginButton
-                        Layout.fillWidth: parent
+                        Layout.fillWidth: true
                         Layout.topMargin: 10
                         height: 52
                         text: "登  录"
@@ -193,29 +219,28 @@ Rectangle {
                         hoverEnabled: true
 
                         background: Rectangle {
-                          radius: 10
-                          color: loginButton.down ? "#2980b9" : (loginButton.hovered ? "#5dade2" : "#3498db")
-                          opacity: loginButton.enabled ? 1 : 0.6
+                            radius: 10
+                            color: loginButton.down ? "#2980b9" : (loginButton.hovered ? "#5dade2" : "#3498db")
+                            opacity: loginButton.enabled ? 1 : 0.6
                         }
 
                         contentItem: Text {
-                          text: loginButton.text
-                          font: loginButton.font
-                          color: "white"
-                          horizontalAlignment: Text.AlignHCenter
-                          verticalAlignment: Text.AlignVCenter
+                            text: loginButton.text
+                            font: loginButton.font
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
                             console.log("点击登录按钮")
-                            // 触发登录
-                            authManager.login(usernameInput.text,passwordInput.text)
+                            authManager.login(usernameInput.text, passwordInput.text)
                         }
                     }
                     // 注册按钮
                     Button {
                         id: registerButton
-                        Layout.fillWidth: parent
+                        Layout.fillWidth: true
                         Layout.topMargin: 10
                         height: 52
                         text: "注  册"
@@ -224,65 +249,47 @@ Rectangle {
                         hoverEnabled: true
 
                         background: Rectangle {
-                          radius: 10
-                          color: registerButton.down ? "#2980b9" : (registerButton.hovered ? "#5dade2" : "#3498db")
-                          opacity: registerButton.enabled ? 1 : 0.6
+                            radius: 10
+                            color: "white"
+                            border.color: "#3498db"
+                            border.width: 2
                         }
 
                         contentItem: Text {
-                          text: registerButton.text
-                          font: registerButton.font
-                          color: "white"
-                          horizontalAlignment: Text.AlignHCenter
-                          verticalAlignment: Text.AlignVCenter
+                            text: registerButton.text
+                            font: registerButton.font
+                            color: "#3498db"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         onClicked: {
-                            //切换到注册界面
-                            print("点击注册按钮")
-                           showRegisterPage=true
+                            console.log("点击注册按钮")
+                            showRegisterPage = true
                         }
                     }
                 }
-
 
                 // 错误提示
                 Text {
                     id: errorText
                     Layout.alignment: Qt.AlignHCenter
                     color: "#e74c3c"
-                    visible: true
+                    visible: text !== ""
                     font.pixelSize: 14
                     font.bold: true
-                    text:authManager.loginMassage
+                    text: authManager.loginMassage
                 }
 
-              // 底部提示 - 修改为实际提示
-              Text {
-                  Layout.alignment: Qt.AlignHCenter
-                  Layout.topMargin: 5
-                  text: "提示：请输入正确的账号和密码登录"
-                  color: "#95a5a6"
-                  font.pixelSize: 13
+                // 底部提示
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    Layout.topMargin: 5
+                    text: "提示：请输入正确的账号和密码登录"
+                    color: "#95a5a6"
+                    font.pixelSize: 13
                 }
             }
         }
-
-        // 输入框获取焦点时清空错误提示
-        // Connections {
-        //     target: usernameInput
-        //     function onTextChanged() {
-        //         errorText.visible = false
-        //         loginButton.enabled = true
-        //     }
-        // }
-
-        // Connections {
-        //     target: passwordInput
-        //     function onTextChanged() {
-        //         errorText.visible = false
-        //         loginButton.enabled = true
-        //     }
-        // }
     }
 }

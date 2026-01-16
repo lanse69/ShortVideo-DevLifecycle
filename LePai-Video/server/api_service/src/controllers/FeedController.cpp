@@ -45,7 +45,7 @@ void FeedController::getDiscoveryFeed(const drogon::HttpRequestPtr& req, std::fu
     // 限制 limit 最大值
     if (limit > 50) limit = 50;
 
-    // 尝试获取身份（异步）
+    // 获取身份
     tryGetUserId(req, [this, limit, offset, callback](std::string userId) {
         recommendService->getDiscoveryFeed(userId, limit, offset, [callback, limit, offset](std::vector<lepai::entity::Video> videos, const std::string& err) {
             if (!err.empty()) {
@@ -56,7 +56,6 @@ void FeedController::getDiscoveryFeed(const drogon::HttpRequestPtr& req, std::fu
                 return;
             }
 
-            // 构建响应
             Json::Value ret;
             ret["code"] = 200;
             ret["message"] = "success";
@@ -113,7 +112,6 @@ void FeedController::getFollowingFeed(const drogon::HttpRequestPtr& req, std::fu
         }
         ret["data"] = list;
 
-        // 计算 next_offset
         int nextOffset;
         if (videos.size() < limit) {
             nextOffset = 0; // 没有更多数据了

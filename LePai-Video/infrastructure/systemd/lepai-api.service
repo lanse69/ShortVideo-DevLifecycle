@@ -1,0 +1,18 @@
+[Unit]
+Description=LePai API Service
+After=network.target docker.service
+
+[Service]
+Type=simple
+# 安装目录
+WorkingDirectory=/opt/lepai/bin
+ExecStart=/opt/lepai/bin/api_service
+Restart=always
+RestartSec=5
+User=root
+# 将日志重定向
+StandardOutput=append:/opt/lepai/logs/api.log
+StandardError=append:/opt/lepai/logs/api_error.log
+
+[Install]
+WantedBy=multi-user.target

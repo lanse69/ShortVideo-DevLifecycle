@@ -4,31 +4,29 @@ import QtQuick.Layouts
 Rectangle {
     color: "transparent"
 
-    // 信号：当页面切换时发出
     signal pageChanged(int pageIndex)  // 0=推荐，1=关注
 
-
-    // 当前选中的标签：true=关注，false=推荐
+    // true=关注，false=推荐
     property bool isFollowTab: false
 
     RowLayout {
         anchors.fill: parent
         spacing: 0
 
-        // 左侧更多按钮
-        Rectangle {
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: 50
-            color: "transparent"
+        // // 左侧更多按钮
+        // Rectangle {
+        //     Layout.preferredWidth: 80
+        //     Layout.preferredHeight: 50
+        //     color: "transparent"
 
-            Text {
-                text: "≡"
-                color: "#FFFFFF"
-                font.pixelSize: 18
-                font.bold: true
-                anchors.centerIn: parent
-            }
-        }
+        //     Text {
+        //         text: "≡"
+        //         color: "#FFFFFF"
+        //         font.pixelSize: 18
+        //         font.bold: true
+        //         anchors.centerIn: parent
+        //     }
+        // }
 
         // 中间推荐和关注切换
         Item {
@@ -50,7 +48,7 @@ Rectangle {
                     TapHandler {
                         onTapped: {
                             isFollowTab = true
-                            pageChanged(1)  // 发出信号，切换到关注页
+                            pageChanged(1)
                             console.log("切换到关注页面")
                         }
                     }
@@ -75,18 +73,18 @@ Rectangle {
             }
         }
 
-        // 右侧搜索按钮
-        Rectangle {
-            Layout.preferredWidth: 80
-            Layout.preferredHeight: 50
-            color: "transparent"
+        // // 右侧搜索按钮
+        // Rectangle {
+        //     Layout.preferredWidth: 80
+        //     Layout.preferredHeight: 50
+        //     color: "transparent"
 
-            Text {
-                text: "🔍"
-                color: "#FFFFFF"
-                font.pixelSize: 18
-                anchors.centerIn: parent
-            }
-        }
+        //     Text {
+        //         text: "🔍"
+        //         color: "#FFFFFF"
+        //         font.pixelSize: 18
+        //         anchors.centerIn: parent
+        //     }
+        // }
     }
 }

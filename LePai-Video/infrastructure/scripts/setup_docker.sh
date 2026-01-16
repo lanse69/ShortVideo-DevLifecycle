@@ -75,7 +75,7 @@ if [ -d "$SQL_DIR" ]; then
         echo "检测到 $REPL_SCRIPT 已存在，跳过生成。"
     else
         echo "正在生成 $REPL_SCRIPT ..."
-        cat <<'EOF' > "$REPL_SCRIPT"
+        cat <<'EOF' | sudo tee "$REPL_SCRIPT" > /dev/null
 #!/bin/bash
 set -e
 echo "host replication lepai_repl all md5" >> "$PGDATA/pg_hba.conf"
