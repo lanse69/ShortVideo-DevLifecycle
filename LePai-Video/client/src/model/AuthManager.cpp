@@ -82,7 +82,43 @@ void AuthManager::login(const QString &username, const QString &password)
        });
 }
 
+QString AuthManager::getToken() const {
+    return m_token;
+}
+
 void AuthManager::logout()
+{
+    // 如果有token，先发送登出请求到服务器
+    if (!m_token.isEmpty()) {
+        qDebug() << "[AuthManager] 发送登出请求到服务器";
+
+        NetworkClient::instance().sendLogoutRequest(m_token,
+            [this](bool success, QString error) {
+                if (success) {
+                    qDebug() << "[AuthManager] 服务器登出成功";
+
+                    // 执行本地登出
+                    performLocalLogout();
+
+                    // 发射登出成功信号
+                    emit logoutSuccess();
+                } else {
+                    qWarning() << "[AuthManager] 服务器登出失败:" << error;
+                    // 发射登出失败信号
+                    performLocalLogout();
+                    emit logoutFailed(error);
+                }
+            });
+    } else {
+        // 如果没有token，只执行本地登出
+        qDebug() << "[AuthManager] 本地登出（无token）";
+        performLocalLogout();
+        // 没有token，直接认为登出成功
+        emit logoutSuccess();
+    }
+}
+
+void AuthManager::performLocalLogout()
 {
     m_token.clear();
     m_wasLogin = false;
@@ -96,9 +132,31 @@ void AuthManager::logout()
         m_currentUser->clear();
     }
 
+    qDebug() << "[AuthManager] 本地登出完成";
+
+    // 发出状态变化信号
     emit wasLoginChanged();
+    emit currentUserChanged();
 }
 
-QString AuthManager::getToken() const {
-    return m_token;
+void AuthManager::refreshUserInfo()
+{
+    if (m_token.isEmpty()) {
+        qWarning() << "[AuthManager] 无法刷新用户信息：Token为空";
+        return;
+    }
+
+    qDebug() << "[AuthManager] 开始刷新用户信息...";
+
+    NetworkClient::instance().getUserInfo(m_token, "", [this](bool success, QJsonObject userData, QString error) {
+        if (success) {
+            qDebug() << "[AuthManager] 用户信息刷新成功，用户:" << userData["username"].toString();
+            m_currentUser->updateFromJson(userData);
+            emit userInfoRefreshed();
+            emit currentUserChanged(); // 通知UI用户信息已更新
+        } else {
+            qWarning() << "[AuthManager] 刷新用户信息失败:" << error;
+        }
+    });
 }
+

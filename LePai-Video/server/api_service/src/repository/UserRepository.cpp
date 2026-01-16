@@ -15,8 +15,16 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
         return;
     }
 
+    std::string sql = R"(
+        SELECT 
+            id, username, password_hash, created_at,
+            avatar_url, following_count, follower_count 
+        FROM users 
+        WHERE username = $1
+    )";
+
     db->execSqlAsync(
-        "SELECT id, username, password_hash, created_at FROM users WHERE username = $1",
+        sql,
         [callback](const drogon::orm::Result& r) {
             if (r.size() == 0) {
                 callback(std::nullopt, "");
@@ -28,9 +36,12 @@ void UserRepository::findByUsername(const std::string& username, DbResultCallbac
                 user.username = r[0]["username"].as<std::string>();
                 user.passwordHash = r[0]["password_hash"].as<std::string>();
                 user.createdAt = r[0]["created_at"].as<std::string>();
+                user.avatarUrl = r[0]["avatar_url"].isNull() ? "" : r[0]["avatar_url"].as<std::string>();
+                user.followingCount = r[0]["following_count"].as<int>();
+                user.followerCount = r[0]["follower_count"].as<int>();
                 callback(user, "");
             } catch (const std::exception& e) {
-                LOG_ERROR << "Data parsing error:" << e.what();
+                LOG_ERROR << "Data parsing error: " << e.what();
                 callback(std::nullopt, "Data corruption");
             }
         },
